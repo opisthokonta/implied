@@ -14,19 +14,7 @@ implied_probabilities(odds, method = "basic", normalize = TRUE)
 
 \item{normalize}{Logical. Some of the methods will give small rounding errors. If TRUE (default)
 a final normalization is applied to make absoultely sure the
-probabilities sum to 1.
-
-The method 'basic' is the simplest method, and computes the implied probabilities by
-dividing the inverted odds by the sum of the inverted odds.
-
-The method 'shin' uses the method by Shin (1991). This model assumes that there is a fraction of
-insider trading, and that the bookmakers tries to maximize their profits. In addition to providing
-implied probabiltiies, the method also gives an estimate of the proportion if inside trade. The method
-implemented here is based on the description in Štrumbelj (2014).
-
-The methods 'wpo', 'or' and 'power' are form the Wisdom of the Crowds document (the updated version) by
-Joseph Buchdahl. The method 'or' is origianlly by Cheung (2015), and the method 'power' is there referred
-to as the logarithmic method.}
+probabilities sum to 1.}
 }
 \value{
 A named list. The first component is named 'probabilities' and contain a matrix of
@@ -48,4 +36,17 @@ depends on the method used to compute the probabilities:
 \description{
 This function calculate the implied probabilties from bookmaker odds in decimal format, using five
 different methods to account for overround in the odds.
+}
+\details{
+The method 'basic' is the simplest method, and computes the implied probabilities by
+dividing the inverted odds by the sum of the inverted odds.
+
+The method 'shin' uses the method by Shin (1991). This model assumes that there is a fraction of
+insider trading, and that the bookmakers tries to maximize their profits. In addition to providing
+implied probabiltiies, the method also gives an estimate of the proportion if inside trade. The method
+implemented here is based on the description in Štrumbelj (2014).
+
+The methods 'wpo', 'or' and 'power' are form the Wisdom of the Crowds document (the updated version) by
+Joseph Buchdahl. The method 'or' is origianlly by Cheung (2015), and the method 'power' is there referred
+to as the logarithmic method.
 }

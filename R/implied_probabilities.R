@@ -5,14 +5,6 @@
 #' This function calculate the implied probabilties from bookmaker odds in decimal format, using five
 #' different methods to account for overround in the odds.
 #'
-#'
-#' @param odds A matrix or numeric of bookmaker odds. The odds must be in the decimal format.
-#' @param method A string giving the method to use. Valid methods are 'basic', 'shin',
-#' 'wpo', 'or' and 'power'.
-#' @param normalize Logical. Some of the methods will give small rounding errors. If TRUE (default)
-#' a final normalization is applied to make absoultely sure the
-#' probabilities sum to 1.
-#'
 #' The method 'basic' is the simplest method, and computes the implied probabilities by
 #' dividing the inverted odds by the sum of the inverted odds.
 #'
@@ -24,6 +16,14 @@
 #' The methods 'wpo', 'or' and 'power' are form the Wisdom of the Crowds document (the updated version) by
 #' Joseph Buchdahl. The method 'or' is origianlly by Cheung (2015), and the method 'power' is there referred
 #' to as the logarithmic method.
+#'
+#'
+#' @param odds A matrix or numeric of bookmaker odds. The odds must be in the decimal format.
+#' @param method A string giving the method to use. Valid methods are 'basic', 'shin',
+#' 'wpo', 'or' and 'power'.
+#' @param normalize Logical. Some of the methods will give small rounding errors. If TRUE (default)
+#' a final normalization is applied to make absoultely sure the
+#' probabilities sum to 1.
 #'
 #'
 #' @return A named list. The first component is named 'probabilities' and contain a matrix of
