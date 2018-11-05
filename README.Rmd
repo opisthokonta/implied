@@ -62,7 +62,7 @@ res1$margin
 
 # Shin's method
 
-Shin's method is based on the assumption that there is a small proportion of bettors that actually knows the outcome (called inside traders), and the rest of the bettors reflect the otherwise "true" uncertainty about the outcome. We can't unfortunately know what the insiders know, but Shin's method gives an estimate of this proportion (denoted Z). 
+Shin's method is based on the assumption that there is a small proportion of bettors that actually knows the outcome (called inside traders), and the rest of the bettors reflect the otherwise "true" uncertainty about the outcome. Unfortunately, we can not know what the insiders know, but Shin's method gives an estimate of this proportion (denoted Z). 
 
 
 ```{r shin}
