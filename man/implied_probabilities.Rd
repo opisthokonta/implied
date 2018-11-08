@@ -20,18 +20,14 @@ probabilities sum to 1.}
 A named list. The first component is named 'probabilities' and contain a matrix of
 implied probabilities. The second in the bookmaker margins (aka the overround). The third
 depends on the method used to compute the probabilities:
- * zvalues (method = 'shin'): The estimated amount of insider trade.
- * specific_margins (method = 'wpo'): Matrix of the margins applied to each outcome.
- * odds_ratios (method = 'or'): Numeric with the odds ratio that is used to convert true
- probabilities to bookamker probabilties.
- * exponents (method = 'power'): The (inverse) exponents that is used to convert true
- probabilities to bookamker probabilties.
-
- @section References
- * Hyun Song Shin (1991) Optimal betting odds against insider traders.
- Erik Štrumbelj (2014) On determining probability forecasts from betting odds.
- * Joseph Buchdahl - USING THE WISDOM OF THE CROWD TO FIND VALUE IN A FOOTBALL MATCH BETTING MARKET (http://www.football-data.co.uk/wisdom_of_crowd_bets)
- * Keith Cheung (2015) Fixed-odds betting and traditional odds (www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/)
+\itemize{
+ \item{zvalues (method = 'shin'): The estimated amount of insider trade.}
+ \item{ specific_margins (method = 'wpo'): Matrix of the margins applied to each outcome.}
+ \item{ odds_ratios (method = 'or'): Numeric with the odds ratio that is used to convert true
+ probabilities to bookamker probabilties.}
+ \item{ exponents (method = 'power'): The (inverse) exponents that is used to convert true
+ probabilities to bookamker probabilties.}
+}
 }
 \description{
 This function calculate the implied probabilties from bookmaker odds in decimal format, using five
@@ -43,10 +39,20 @@ dividing the inverted odds by the sum of the inverted odds.
 
 The method 'shin' uses the method by Shin (1991). This model assumes that there is a fraction of
 insider trading, and that the bookmakers tries to maximize their profits. In addition to providing
-implied probabiltiies, the method also gives an estimate of the proportion if inside trade. The method
+implied probabilties, the method also gives an estimate of the proportion if inside trade. The method
 implemented here is based on the description in Štrumbelj (2014).
 
 The methods 'wpo', 'or' and 'power' are form the Wisdom of the Crowds document (the updated version) by
 Joseph Buchdahl. The method 'or' is origianlly by Cheung (2015), and the method 'power' is there referred
 to as the logarithmic method.
 }
+\section{References}{
+
+\itemize{
+ \item{Hyun Song Shin (1991) Optimal betting odds against insider traders.}
+ \item{Erik Štrumbelj (2014) On determining probability forecasts from betting odds.}
+ \item{Joseph Buchdahl - USING THE WISDOM OF THE CROWD TO FIND VALUE IN A FOOTBALL MATCH BETTING MARKET (http://www.football-data.co.uk/wisdom_of_crowd_bets)}
+ \item{Keith Cheung (2015) Fixed-odds betting and traditional odds (www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/)}
+}
+}
+
