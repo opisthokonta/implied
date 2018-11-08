@@ -2,7 +2,7 @@
 implied
 =======
 
-This package contain a single funcion, implied\_probabilities(), that convert bookmaker odds into proper probabiltiies. Several methods are available, with different assumptions regarding the underlying mechanism the bookmakers convert their probabilities into odds.
+This package contain a single function, implied\_probabilities(), that convert bookmaker odds into proper probabiltiies. Several methods are available, with different assumptions regarding the underlying mechanism the bookmakers convert their probabilities into odds.
 
 A naive conversion of bookmaker odds into probabilities has two main problems. The first is that the probabilities are not proper probabilities, since they sum to more than 1. The excess probability is called the bookmakers margin. The second problem is that the probabilities, even if the margin is removed, will be biased in several ways, usually because of what is called the [favorite-longshot bias](https://en.wikipedia.org/wiki/Favourite-longshot_bias). The methods in this package remove the bookmaker margin and some of them also adjust for favorite-longshot bias.
 
@@ -25,7 +25,7 @@ This method tend to be the least accurate of the methods in this package. I have
 
 The implied\_probabilities() function return a list with the proper probabilities (as a matrix) and the bookmaker margins.
 
-In the examples below are three sets of bookamker odds from three football matches.
+In the examples below are three sets of bookmaker odds from three football matches.
 
 ``` r
 
@@ -73,7 +73,7 @@ Margin Weights Proportional to the Odds
 
 This method is from [Joseph Buchdahl's Wisom of the Crowds document](http://www.football-data.co.uk/wisdom_of_crowd_bets), and assumes that the margin applied by the bookmaker for each of the outcome is proprtional to the probabilitiy of the outcome. In other words, the excessive probabilties are unevenly applied in a way that is reflects the favorite-longshot bias.
 
-The probabilities are calculated can be calculated from the bookamker odds <i>O</i> using the following formula
+The probabilities are calculated can be calculated from the bookmaker odds <i>O</i> using the following formula
 
 <i>p<sub>i</sub></i> = n \* O<sub>i</sub> / (n - M \* O<sub>i</sub>)
 
@@ -126,7 +126,7 @@ res4$odds_ratios
 The power method
 ================
 
-The power method models the bookamker probabilties as a power function of the proper probabilties. This method is also described in the Wisdom of the Crowds document, where it is referred to as the logarithmic method.
+The power method models the bookmaker probabilties as a power function of the proper probabilties. This method is also described in the Wisdom of the Crowds document, where it is referred to as the logarithmic method.
 
 <i>p<sub>i</sub></i> = <i>r<sub>i</sub></i><sup>(1/n)</sup>
 
