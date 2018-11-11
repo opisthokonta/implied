@@ -53,8 +53,13 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE){
             all(odds >= 1))
 
   if (!is.matrix(odds)){
-    odds <- matrix(odds, nrow=1,
-                   dimnames = list(NULL, names(odds)))
+
+    if ('data.frame' %in% class(odds)){
+      odds <- as.matrix(odds)
+    } else {
+      odds <- matrix(odds, nrow=1,
+                     dimnames = list(NULL, names(odds)))
+    }
   }
 
   # Prepare the list that will be returned.
