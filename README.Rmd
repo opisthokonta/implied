@@ -134,7 +134,7 @@ res4$exponents
 ```
 
 # Other packages
-The only other R package I know of with related functionality is the [gambleR](https://github.com/DataWookie/gambleR) package.
+The only other R package I know of with related functionality is the [gambleR](https://github.com/DataWookie/gambleR) package. The [odds.converter](https://cran.r-project.org/web/packages/odds.converter/index.html) package can convert between different odds formats, including to decimal odds, that this package requires.
 
 
 # Literature
