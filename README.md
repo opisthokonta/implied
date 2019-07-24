@@ -128,9 +128,9 @@ The power method
 
 The power method models the bookmaker probabilties as a power function of the proper probabilties. This method is also described in the Wisdom of the Crowds document, where it is referred to as the logarithmic method.
 
-<i>p<sub>i</sub></i> = <i>r<sub>i</sub></i><sup>(1/n)</sup>
+<i>p<sub>i</sub></i> = <i>r<sub>i</sub></i><sup>(1/k)</sup>
 
-where <i>n</i> is selected so that sum(<i>p<sub>i</sub></i>) = 1.
+where <i>k</i> is selected so that sum(<i>p<sub>i</sub></i>) = 1.
 
 ``` r
 res4 <- implied_probabilities(my_odds, method = 'power')
@@ -144,6 +144,41 @@ res4$probabilities
 # The inverse exponents (n) used to convert the proper probablities to bookmaker probabilities.
 res4$exponents
 #> [1] 0.9797664 0.9788115 0.9419744
+```
+
+The additive method
+===================
+
+The additive method removes the margin from the naive probabilites by subtracting an equal amount of of the margin from each outcome. The formula used is
+
+<i>p<sub>i</sub></i> = <i>r<sub>i</sub></i> - ((sum(<i>r</i>) - 1) / n)
+
+If there are only two outcomes, the additive method and Shin's method are equivalent.
+
+``` r
+
+res5 <- implied_probabilities(my_odds, method = 'additive')
+
+res5$probabilities
+#>           Home      Draw      Away
+#> [1,] 0.2310332 0.2632083 0.5057585
+#> [2,] 0.4004096 0.2625166 0.3370739
+#> [3,] 0.4666506 0.2913457 0.2420036
+```
+
+One problem with the additive method is that it can produce negative probabilities, escpecially for outcomes with low probabilties. This can often be the case when there are many outcomes, for example in racing sports. If this happens, you will be given a warning. Here is an example taken from Clarke et al (2017):
+
+``` r
+
+my_odds2 <- t(matrix(1/c(0.870, 0.2, 0.1, 0.05, 0.02, 0.01)))
+colnames(my_odds2) <- paste('X', 1:6, sep='')
+
+res6 <- implied_probabilities(my_odds2, method = 'additive')
+#> Warning in implied_probabilities(my_odds2, method = "additive"): Probabilities outside the 0-1 range produced at 1 instances.
+
+res6$probabilities
+#>             X1        X2         X3          X4          X5          X6
+#> [1,] 0.8283333 0.1583333 0.05833333 0.008333333 -0.02166667 -0.03166667
 ```
 
 Other packages
@@ -160,3 +195,4 @@ Here are some relevant references and links:
 -   Erik Štrumbelj (2014) On determining probability forecasts from betting odds. [Link](https://www.sciencedirect.com/science/article/pii/S0169207014000533)
 -   Joseph Buchdahl - USING THE WISDOM OF THE CROWD TO FIND VALUE IN A FOOTBALL MATCH BETTING MARKET (<http://www.football-data.co.uk/wisdom_of_crowd_bets>)
 -   Keith Cheung (2015) Fixed-odds betting and traditional odds (<http://www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/>)
+-   Stephen Clarke, Stephanie Kovalchik & Martin Ingram (2017) Adjusting Bookmaker's Odds to Allow for Overround [Link](http://www.sciencepublishinggroup.com/journal/paperinfo?journalid=155&doi=10.11648/j.ajss.20170506.12)

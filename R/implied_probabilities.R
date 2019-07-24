@@ -18,9 +18,10 @@
 #' to as the logarithmic method.
 #'
 #'
+#'
 #' @param odds A matrix or numeric of bookmaker odds. The odds must be in the decimal format.
 #' @param method A string giving the method to use. Valid methods are 'basic', 'shin',
-#' 'wpo', 'or' and 'power'.
+#' 'wpo', 'or', 'power' or 'additive'.
 #' @param normalize Logical. Some of the methods will give small rounding errors. If TRUE (default)
 #' a final normalization is applied to make absoultely sure the
 #' probabilities sum to 1.
@@ -38,6 +39,10 @@
 #'  probabilities to bookamker probabilties.}
 #' }
 #'
+#' The fourth compnent 'problematic' is a logical vector called indicating if any probabilites has fallen
+#' outside the 0-1 range.
+#'
+#'
 #' @section References:
 #' \itemize{
 #'  \item{Hyun Song Shin (1991) Optimal betting odds against insider traders.}
@@ -49,7 +54,7 @@
 implied_probabilities <- function(odds, method='basic', normalize=TRUE){
 
   stopifnot(length(method) == 1,
-            tolower(method) %in% c('basic', 'shin', 'wpo', 'or', 'power'),
+            tolower(method) %in% c('basic', 'shin', 'wpo', 'or', 'power', 'additive'),
             all(odds >= 1))
 
   if (!is.matrix(odds)){
@@ -126,6 +131,16 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE){
     out$probabilities <- probs
     out$exponents <- exponents
 
+  } else if (method == 'additive'){
+
+    probs <- matrix(nrow=n_odds, ncol=n_outcomes)
+
+    for (ii in 1:n_odds){
+      probs[ii,] <- inverted_odds[ii,] - ((inverted_odds_sum[ii] - 1) / n_outcomes)
+    }
+
+    out$probabilities <- probs
+
   }
 
   ## do a final normalization to make sure the probabilites
@@ -138,6 +153,15 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE){
   if (!is.null(colnames(odds))){
     colnames(out$probabilities) <- colnames(odds)
   }
+
+  # check if there are any probabilites outside the 0-1 range.
+  problematic <- apply(out$probabilities, MARGIN = 1, FUN=function(x){any(x > 1 | x < 0)})
+  if (any(problematic)){
+    warning(sprintf('Probabilities outside the 0-1 range produced at %d instances.\n',
+                    sum(problematic)))
+  }
+  out$problematic <- problematic
+
 
   return(out)
 }

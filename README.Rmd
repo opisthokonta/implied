@@ -120,9 +120,9 @@ res4$odds_ratios
 
 The power method models the bookmaker probabilties as a power function of the proper probabilties. This method is also described in the Wisdom of the Crowds document, where it is referred to as the logarithmic method.
 
-<i>p<sub>i</sub></i> = <i>r<sub>i</sub></i><sup>(1/n)</sup>
+<i>p<sub>i</sub></i> = <i>r<sub>i</sub></i><sup>(1/k)</sup>
 
-where <i>n</i> is selected so that sum(<i>p<sub>i</sub></i>) = 1.
+where <i>k</i> is selected so that sum(<i>p<sub>i</sub></i>) = 1.
 
 ```{r power}
 res4 <- implied_probabilities(my_odds, method = 'power')
@@ -132,6 +132,37 @@ res4$probabilities
 # The inverse exponents (n) used to convert the proper probablities to bookmaker probabilities.
 res4$exponents
 ```
+
+# The additive method
+
+The additive method removes the margin from the naive probabilites by subtracting an equal amount of of the margin from each outcome. The formula used is
+
+<i>p<sub>i</sub></i> = <i>r<sub>i</sub></i> - ((sum(<i>r</i>) - 1) / n)
+
+If there are only two outcomes, the additive method and Shin's method are equivalent.
+
+
+```{r additive1}
+
+res5 <- implied_probabilities(my_odds, method = 'additive')
+
+res5$probabilities
+
+```
+
+One problem with the additive method is that it can produce negative probabilities, escpecially for outcomes with low probabilties. This can often be the case when there are many outcomes, for example in racing sports. If this happens, you will be given a warning. Here is an example taken from Clarke et al (2017):
+
+```{r additive2}
+
+my_odds2 <- t(matrix(1/c(0.870, 0.2, 0.1, 0.05, 0.02, 0.01)))
+colnames(my_odds2) <- paste('X', 1:6, sep='')
+
+res6 <- implied_probabilities(my_odds2, method = 'additive')
+
+res6$probabilities
+
+```
+
 
 # Other packages
 The only other R package I know of with related functionality is the [gambleR](https://github.com/DataWookie/gambleR) package. The [odds.converter](https://cran.r-project.org/web/packages/odds.converter/index.html) package can convert between different odds formats, including to decimal odds, that this package requires.
@@ -144,3 +175,4 @@ Here are some relevant references and links:
 * Erik Štrumbelj (2014) On determining probability forecasts from betting odds. [Link](https://www.sciencedirect.com/science/article/pii/S0169207014000533)
 * Joseph Buchdahl - USING THE WISDOM OF THE CROWD TO FIND VALUE IN A FOOTBALL MATCH BETTING MARKET (http://www.football-data.co.uk/wisdom_of_crowd_bets)
 * Keith Cheung (2015) Fixed-odds betting and traditional odds (http://www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/)
+* Stephen Clarke, Stephanie Kovalchik & Martin Ingram (2017) Adjusting Bookmaker's Odds to Allow for Overround [Link](http://www.sciencepublishinggroup.com/journal/paperinfo?journalid=155&doi=10.11648/j.ajss.20170506.12)

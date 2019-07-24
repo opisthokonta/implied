@@ -10,7 +10,7 @@ implied_probabilities(odds, method = "basic", normalize = TRUE)
 \item{odds}{A matrix or numeric of bookmaker odds. The odds must be in the decimal format.}
 
 \item{method}{A string giving the method to use. Valid methods are 'basic', 'shin',
-'wpo', 'or' and 'power'.}
+'wpo', 'or', 'power' or 'additive'.}
 
 \item{normalize}{Logical. Some of the methods will give small rounding errors. If TRUE (default)
 a final normalization is applied to make absoultely sure the
@@ -28,6 +28,9 @@ depends on the method used to compute the probabilities:
  \item{ exponents (method = 'power'): The (inverse) exponents that is used to convert true
  probabilities to bookamker probabilties.}
 }
+
+The fourth compnent 'problematic' is a logical vector called indicating if any probabilites has fallen
+outside the 0-1 range.
 }
 \description{
 This function calculate the implied probabilties from bookmaker odds in decimal format, using five
