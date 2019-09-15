@@ -89,9 +89,22 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE){
     probs <- matrix(nrow=n_odds, ncol=n_outcomes)
 
     for (ii in 1:n_odds){
-      res <- stats::uniroot(f=shin_solvefor, interval = c(0,0.4), io=inverted_odds[ii,])
-      zvalues[ii] <- res$root
-      probs[ii,] <- shin_func(zz=res$root, io = inverted_odds[ii,])
+
+      # initialize zz at 0
+      zz_tmp <- 0
+      for (jj in 1:1000){
+        zz_prev <- zz_tmp
+        zz_tmp <- (sum(sqrt(zz_prev^2 + 4*(1 - zz_prev) * (((inverted_odds[ii,])^2)/inverted_odds_sum[ii])))-2) / (n_outcomes - 2)
+
+        if (abs(zz_tmp - zz_prev)  <= .Machine$double.eps^0.25){
+          break
+        } else if (ii >= 1000){
+          warning('Could not find z: Did not converge. The results may be unreliable')
+        }
+      }
+
+      zvalues[ii] <- zz_tmp
+      probs[ii,] <- shin_func(zz=zz_tmp, io = inverted_odds[ii,])
     }
 
     out$probabilities <- probs
@@ -179,12 +192,6 @@ shin_func <- function(zz, io){
   (sqrt(zz^2 + 4*(1 - zz) * (((io)^2)/bb)) - zz) / (2*(1-zz))
 }
 
-# the condition that the sum of the probabilites must sum to 1.
-# Used with uniroot.
-shin_solvefor <- function(zz, io){
-  tmp <- shin_func(zz, io)
-  1 - sum(tmp) # 0 when the condition is satisfied.
-}
 
 # Calculate the probabilities usin the odds ratio method,
 # for a given value of the odds ratio cc.
