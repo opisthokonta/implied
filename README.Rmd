@@ -85,7 +85,7 @@ res2$zvalues
 
 # Margin Weights Proportional to the Odds
 
-This method is from [Joseph Buchdahl's Wisom of the Crowds document](http://www.football-data.co.uk/wisdom_of_crowd_bets), and assumes that the margin applied by the bookmaker for each of the outcome is proportional to the probability of the outcome. In other words, the excessive probabilities are unevenly applied in a way that is reflects the favorite-longshot bias. 
+This method is from [Joseph Buchdahl's Wisdom of the Crowds document](http://www.football-data.co.uk/wisdom_of_crowd_bets), and assumes that the margin applied by the bookmaker for each of the outcome is proportional to the probability of the outcome. In other words, the excessive probabilities are unevenly applied in a way that is reflects the favorite-longshot bias. 
 
 The probabilities are calculated can be calculated from the bookmaker odds <i>O</i> using the following formula
 
