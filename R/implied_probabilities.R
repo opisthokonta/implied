@@ -15,9 +15,9 @@
 #' Joseph Buchdahl. The method 'or' is originally by Cheung (2015), and the method 'power' is there referred
 #' to as the logarithmic method.
 #'
-#' @param odds A matrix or numeric of bookmaker odds. The odds must be in the decimal format.
-#' @param method A string giving the method to use. Valid methods are 'basic', 'shin',
-#' 'wpo', 'or', 'power' or 'additive'.
+#' @param odds A data frame, matrix or numeric vector of bookmaker odds. The odds must be in the
+#'    decimal format and be greater than or equal to 1.
+#' @param method 	The method to be used. See ‘Details’. Can be abbreviated.
 #' @param normalize Logical. Some of the methods will give small rounding errors. If TRUE (default)
 #' a final normalization is applied to make absolutely sure the
 #' probabilities sum to 1.
@@ -49,11 +49,10 @@
 #'
 #' @export
 
-implied_probabilities <- function(odds, method='basic', normalize=TRUE){
+implied_probabilities <- function(odds, method = c('basic', 'shin', 'wpo', 'or', 'power', 'additive'), normalize = TRUE){
 
-  stopifnot(length(method) == 1,
-            tolower(method) %in% c('basic', 'shin', 'wpo', 'or', 'power', 'additive'),
-            all(odds >= 1))
+  method <- match.arg(method)
+  stopifnot(all(odds >= 1))
 
   if (!is.matrix(odds)){
 
