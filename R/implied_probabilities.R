@@ -1,8 +1,6 @@
-
-
 #' Implied probabilities from bookmaker odds.
 #'
-#' This function calculate the implied probabilties from bookmaker odds in decimal format, using five
+#' This function calculate the implied probabilities from bookmaker odds in decimal format, using five
 #' different methods to account for overround in the odds.
 #'
 #' The method 'basic' is the simplest method, and computes the implied probabilities by
@@ -10,22 +8,19 @@
 #'
 #' The method 'shin' uses the method by Shin (1991). This model assumes that there is a fraction of
 #' insider trading, and that the bookmakers tries to maximize their profits. In addition to providing
-#' implied probabilties, the method also gives an estimate of the proportion if inside trade. The method
+#' implied probabilities, the method also gives an estimate of the proportion if inside trade. The method
 #' implemented here is based on the description in Štrumbelj (2014).
 #'
 #' The methods 'wpo', 'or' and 'power' are form the Wisdom of the Crowds document (the updated version) by
-#' Joseph Buchdahl. The method 'or' is origianlly by Cheung (2015), and the method 'power' is there referred
+#' Joseph Buchdahl. The method 'or' is originally by Cheung (2015), and the method 'power' is there referred
 #' to as the logarithmic method.
-#'
-#'
 #'
 #' @param odds A matrix or numeric of bookmaker odds. The odds must be in the decimal format.
 #' @param method A string giving the method to use. Valid methods are 'basic', 'shin',
 #' 'wpo', 'or', 'power' or 'additive'.
 #' @param normalize Logical. Some of the methods will give small rounding errors. If TRUE (default)
-#' a final normalization is applied to make absoultely sure the
+#' a final normalization is applied to make absolutely sure the
 #' probabilities sum to 1.
-#'
 #'
 #' @return A named list. The first component is named 'probabilities' and contain a matrix of
 #' implied probabilities. The second in the bookmaker margins (aka the overround). The third
@@ -34,23 +29,26 @@
 #'  \item{zvalues (method = 'shin'): The estimated amount of insider trade.}
 #'  \item{ specific_margins (method = 'wpo'): Matrix of the margins applied to each outcome.}
 #'  \item{ odds_ratios (method = 'or'): Numeric with the odds ratio that is used to convert true
-#'  probabilities to bookamker probabilties.}
+#'  probabilities to bookmaker probabilities.}
 #'  \item{ exponents (method = 'power'): The (inverse) exponents that is used to convert true
-#'  probabilities to bookamker probabilties.}
+#'  probabilities to bookmaker probabilities.}
 #' }
 #'
-#' The fourth compnent 'problematic' is a logical vector called indicating if any probabilites has fallen
+#' The fourth component 'problematic' is a logical vector called indicating if any probabilities has fallen
 #' outside the 0-1 range.
 #'
+#' @references
 #'
-#' @section References:
-#' \itemize{
-#'  \item{Hyun Song Shin (1991) Optimal betting odds against insider traders.}
-#'  \item{Erik Štrumbelj (2014) On determining probability forecasts from betting odds.}
-#'  \item{Joseph Buchdahl - USING THE WISDOM OF THE CROWD TO FIND VALUE IN A FOOTBALL MATCH BETTING MARKET (http://www.football-data.co.uk/wisdom_of_crowd_bets)}
-#'  \item{Keith Cheung (2015) Fixed-odds betting and traditional odds (www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/)}
-#' }
+#'    Shin, H. S. (1991). Optimal betting odds against insider traders. Economic Journal, 101(408), 1179-1185.
+#'
+#'    Štrumbelj, E. (2014). On determining probability forecasts from betting odds. International journal of forecasting, 30(4), 934-943.
+#'
+#'    Joseph Buchdahl - Using the wisdom of the crowd to find value in a football match betting market \url{http://www.football-data.co.uk/wisdom_of_crowd_bets}
+#'
+#'     Keith Cheung (2015) Fixed-odds betting and traditional odds \url{www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/}
+#'
 #' @export
+
 implied_probabilities <- function(odds, method='basic', normalize=TRUE){
 
   stopifnot(length(method) == 1,
@@ -143,7 +141,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE){
 
   }
 
-  ## do a final normalization to make sure the probabilites
+  ## do a final normalization to make sure the probabilities
   ## sum to 1 without rounding errors.
   if (normalize){
     out$probabilities <- out$probabilities / rowSums(out$probabilities)
@@ -154,7 +152,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE){
     colnames(out$probabilities) <- colnames(odds)
   }
 
-  # check if there are any probabilites outside the 0-1 range.
+  # check if there are any probabilities outside the 0-1 range.
   problematic <- apply(out$probabilities, MARGIN = 1, FUN=function(x){any(x > 1 | x < 0)})
   if (any(problematic)){
     warning(sprintf('Probabilities outside the 0-1 range produced at %d instances.\n',
@@ -166,49 +164,82 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE){
   return(out)
 }
 
-
 #########################################################
 # Internal functions used to transform probabilities
 # and be used with uniroot.
 #########################################################
 
-# Calculate the probabilities usin Shin's formula, for a given value of z.
-# io = inverted odds.
+#' Calculate the probabilities using Shin's formula, for a given value of z.
+#'
+#' @param zz ?
+#' @param io Inverted odds.
+#' @return Probabilities using Shin's formula
+#' @keywords internal
+
 shin_func <- function(zz, io){
   bb <- sum(io)
   (sqrt(zz^2 + 4*(1 - zz) * (((io)^2)/bb)) - zz) / (2*(1-zz))
 }
 
-# the condition that the sum of the probabilites must sum to 1.
-# Used with uniroot.
+#' The condition that the sum of the probabilites must sum to 1. Used with
+#' uniroot.
+#'
+#' @param zz ?
+#' @param io Inverted odds.
+#' @return `0` if the probabilities sum to 1, `1` otherwise.
+#' @keywords internal
+
 shin_solvefor <- function(zz, io){
   tmp <- shin_func(zz, io)
   1 - sum(tmp) # 0 when the condition is satisfied.
 }
 
-# Calculate the probabilities usin the odds ratio method,
-# for a given value of the odds ratio cc.
-# io = inverted odds.
+#' Calculate the probabilities using the odds ratio method, for a given value
+#' of the odds ratio cc.
+#'
+#' @param zz ?
+#' @param io Inverted odds.
+#' @return Probabilities using the odds ratio method.
+#' @keywords internal
+
 or_func <- function(cc, io){
   io / (cc + io - (cc*io))
 }
 
-# The condition that the sum of the probabilites must sum to 1.
-# This function calulates the true probability, given bookmaker
-# probabilites xx, and the odds ratio cc.
+#' The condition that the sum of the probabilites must sum to 1. This function
+#' calulates the true probability, given bookmaker probabilites xx, and the
+#' odds ratio cc.
+#'
+#' @param cc ?
+#' @param io Inverted odds.
+#' @return True probabilities.
+#' @keywords internal
+
 or_solvefor <- function(cc, io){
   tmp <- or_func(cc, io)
   sum(tmp) - 1
 }
 
-# power function.
+#' Power function
+#'
+#' @param nn Numeric vector.
+#' @param io ?.
+#' @return Numeric.
+#' @keywords internal
+
 pwr_func <- function(nn, io){
   io^(1/nn)
 }
 
-# The condition that the sum of the probabilites must sum to 1.
-# This function calulates the true probability, given bookmaker
-# probabilites xx, and the inverse exponent. nn.
+#' The condition that the sum of the probabilites must sum to 1. This function
+#' calulates the true probability, given bookmaker probabilites xx, and the
+#' inverse exponent.
+#'
+#' @param nn Numeric vector.
+#' @param io ?.
+#' @return True probabilities.
+#' @keywords internal
+
 pwr_solvefor <- function(nn, io){
   tmp <- pwr_func(nn, io)
   sum(tmp) - 1
