@@ -11,7 +11,7 @@
 #' implied probabilities, the method also gives an estimate of the proportion if inside trade. The method
 #' implemented here is based on the description in Štrumbelj (2014).
 #'
-#' Methods "\code{wpo}", "\code{or}" and "\code{power}" are form the Wisdom of the Crowds document (the updated version) by
+#' Methods "\code{wpo}", "\code{or}" and "\code{power}" are from the Wisdom of the Crowds document (the updated version) by
 #' Joseph Buchdahl. The method "\code{or}" is originally by Cheung (2015), and the method "\code{power}" is there referred
 #' to as the logarithmic method.
 #'
