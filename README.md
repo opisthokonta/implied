@@ -1,31 +1,64 @@
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-implied
-=======
 
-This package contain a single function, implied\_probabilities(), that convert bookmaker odds into proper probabiltiies. Several methods are available, with different assumptions regarding the underlying mechanism the bookmakers convert their probabilities into odds.
+<!-- badges: start -->
 
-A naive conversion of bookmaker odds into probabilities has two main problems. The first is that the probabilities are not proper probabilities, since they sum to more than 1. The excess probability is called the bookmakers margin. The second problem is that the probabilities, even if the margin is removed, will be biased in several ways, usually because of what is called the [favorite-longshot bias](https://en.wikipedia.org/wiki/Favourite-longshot_bias). The methods in this package remove the bookmaker margin and some of them also adjust for favorite-longshot bias.
+[![AppVeyor build
+status](https://ci.appveyor.com/api/projects/status/github/opisthokonta/implied?branch=master&svg=true)](https://ci.appveyor.com/project/opisthokonta/implied)
+[![Travis build
+status](https://travis-ci.org/opisthokonta/implied.svg?branch=master)](https://travis-ci.org/opisthokonta/implied)
+[![Codecov test
+coverage](https://codecov.io/gh/JonasMoss/implied/branch/master/graph/badge.svg)](https://codecov.io/gh/JonasMoss/implied?branch=master)
+[![Project Status: WIP – Initial development is in progress, but there
+has not yet been a stable, usable release suitable for the
+public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+<!-- badges: end -->
 
-Installation
-============
+# implied
+
+This package contain a single function, implied\_probabilities(), that
+convert bookmaker odds into proper probabilities. Several methods are
+available, with different assumptions regarding the underlying mechanism
+the bookmakers convert their probabilities into odds.
+
+A naive conversion of bookmaker odds into probabilities has two main
+problems. The first is that the probabilities are not proper
+probabilities, since they sum to more than 1. The excess probability is
+called the bookmakers margin. The second problem is that the
+probabilities, even if the margin is removed, will be biased in several
+ways, usually because of what is called the [favorite-longshot
+bias](https://en.wikipedia.org/wiki/Favourite-longshot_bias). The
+methods in this package remove the bookmaker margin and some of them
+also adjust for favorite-longshot bias.
+
+# Installation
 
 ``` r
 install.packages("devtools")
 devtools::install_github("opisthokonta/implied")
 ```
 
-The basic method
-================
+# The basic method
 
-The default method used by the function implied\_probabilities() is called the basic method. This is the simplest and most common method for converting bookmaker odds into probabilties, and is obtained by dividing the naive probabilities (the inverted odds) by the sum of the inverted odds. If <i>p<sub>i</sub></i> is the true underlying probability for outcome <i>i</i>, and <i>r<sub>i</sub></i> is the cooresponding inverted odds, then the probabilities are computed as
+The default method used by the function implied\_probabilities() is
+called the basic method. This is the simplest and most common method for
+converting bookmaker odds into probabilities, and is obtained by
+dividing the naive probabilities (the inverted odds) by the sum of the
+inverted odds. If <i>p<sub>i</sub></i> is the true underlying
+probability for outcome <i>i</i>, and <i>r<sub>i</sub></i> is the
+corresponding inverted odds, then the probabilities are computed as
 
 <i>p<sub>i</sub></i> = <i>r<sub>i</sub></i> / sum(<i>r</i>)
 
-This method tend to be the least accurate of the methods in this package. I have also seen this normalization method been referred to as the multiplicative method.
+This method tend to be the least accurate of the methods in this
+package. I have also seen this normalization method been referred to as
+the multiplicative method.
 
-The implied\_probabilities() function return a list with the proper probabilities (as a matrix) and the bookmaker margins.
+The implied\_probabilities() function return a list with the proper
+probabilities (as a matrix) and the bookmaker margins.
 
-In the examples below are three sets of bookmaker odds from three football matches.
+In the examples below are three sets of bookmaker odds from three
+football matches.
 
 ``` r
 
@@ -49,10 +82,14 @@ res1$margin
 #> [1] 0.02118602 0.02326112 0.06346277
 ```
 
-Shin's method
-=============
+# Shin’s method
 
-Shin's method is based on the assumption that there is a small proportion of bettors that actually knows the outcome (called inside traders), and the rest of the bettors reflect the otherwise "true" uncertainty about the outcome. Unfortunately, we can not know what the insiders know, but Shin's method gives an estimate of the proportion of insiders (denoted Z).
+Shin’s method is based on the assumption that there is a small
+proportion of bettors that actually knows the outcome (called inside
+traders), and the rest of the bettors reflect the otherwise “true”
+uncertainty about the outcome. Unfortunately, we can not know what the
+insiders know, but Shin’s method gives an estimate of the proportion of
+insiders (denoted Z).
 
 ``` r
 res2 <- implied_probabilities(my_odds, method = 'shin')
@@ -68,12 +105,17 @@ res2$zvalues
 #> [1] 0.01061048 0.01163552 0.03182353
 ```
 
-Margin Weights Proportional to the Odds
-=======================================
+# Margin Weights Proportional to the Odds
 
-This method is from [Joseph Buchdahl's Wisom of the Crowds document](http://www.football-data.co.uk/wisdom_of_crowd_bets), and assumes that the margin applied by the bookmaker for each of the outcome is proprtional to the probabilitiy of the outcome. In other words, the excessive probabilties are unevenly applied in a way that is reflects the favorite-longshot bias.
+This method is from [Joseph Buchdahl’s Wisom of the Crowds
+document](http://www.football-data.co.uk/wisdom_of_crowd_bets), and
+assumes that the margin applied by the bookmaker for each of the outcome
+is proportional to the probability of the outcome. In other words, the
+excessive probabilities are unevenly applied in a way that is reflects
+the favorite-longshot bias.
 
-The probabilities are calculated can be calculated from the bookmaker odds <i>O</i> using the following formula
+The probabilities are calculated can be calculated from the bookmaker
+odds <i>O</i> using the following formula
 
 <i>p<sub>i</sub></i> = n \* O<sub>i</sub> / (n - M \* O<sub>i</sub>)
 
@@ -96,18 +138,24 @@ res3$specific_margins
 #> [3,] 0.04533211 0.07260878 0.08741297
 ```
 
-The odds ratio method
-=====================
+# The odds ratio method
 
-The odds ratio method is also from the Wisdom of the Crowds document, but is originally from an [article by Keith Cheung](www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/). This method models the relationship between the proper probabilities and the improper bookmaker probabilties using the odds ratio (OR) function:
+The odds ratio method is also from the Wisdom of the Crowds document,
+but is originally from an [article by Keith
+Cheung](www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/).
+This method models the relationship between the proper probabilities and
+the improper bookmaker probabilities using the odds ratio (OR) function:
 
-OR = <i>p<sub>i</sub></i> (1 - <i>r<sub>i</sub></i>) / <i>r<sub>i</sub></i> (1 - <i>p<sub>i</sub></i>)
+OR = <i>p<sub>i</sub></i> (1 - <i>r<sub>i</sub></i>) /
+<i>r<sub>i</sub></i> (1 - <i>p<sub>i</sub></i>)
 
 This gives the probabilities
 
-<i>p<sub>i</sub></i> = <i>r<sub>i</sub></i> / OR + <i>r<sub>i</sub></i> - (OR \* <i>r<sub>i</sub></i>)
+<i>p<sub>i</sub></i> = <i>r<sub>i</sub></i> / OR + <i>r<sub>i</sub></i>
+- (OR \* <i>r<sub>i</sub></i>)
 
-where the odds ratio OR is selected so that sum(<i>p<sub>i</sub></i>) = 1.
+where the odds ratio OR is selected so that sum(<i>p<sub>i</sub></i>) =
+1.
 
 ``` r
 res4 <- implied_probabilities(my_odds, method = 'or')
@@ -123,10 +171,12 @@ res4$odds_ratios
 #> [1] 1.034449 1.035805 1.102606
 ```
 
-The power method
-================
+# The power method
 
-The power method models the bookmaker probabilties as a power function of the proper probabilties. This method is also described in the Wisdom of the Crowds document, where it is referred to as the logarithmic method.
+The power method models the bookmaker probabilities as a power function
+of the proper probabilities. This method is also described in the Wisdom
+of the Crowds document, where it is referred to as the logarithmic
+method.
 
 <i>p<sub>i</sub></i> = <i>r<sub>i</sub></i><sup>(1/k)</sup>
 
@@ -146,14 +196,16 @@ res4$exponents
 #> [1] 0.9797664 0.9788115 0.9419744
 ```
 
-The additive method
-===================
+# The additive method
 
-The additive method removes the margin from the naive probabilites by subtracting an equal amount of of the margin from each outcome. The formula used is
+The additive method removes the margin from the naive probabilities by
+subtracting an equal amount of of the margin from each outcome. The
+formula used is
 
 <i>p<sub>i</sub></i> = <i>r<sub>i</sub></i> - ((sum(<i>r</i>) - 1) / n)
 
-If there are only two outcomes, the additive method and Shin's method are equivalent.
+If there are only two outcomes, the additive method and Shin’s method
+are equivalent.
 
 ``` r
 
@@ -166,7 +218,11 @@ res5$probabilities
 #> [3,] 0.4666506 0.2913457 0.2420036
 ```
 
-One problem with the additive method is that it can produce negative probabilities, escpecially for outcomes with low probabilties. This can often be the case when there are many outcomes, for example in racing sports. If this happens, you will be given a warning. Here is an example taken from Clarke et al (2017):
+One problem with the additive method is that it can produce negative
+probabilities, especially for outcomes with low probabilities. This can
+often be the case when there are many outcomes, for example in racing
+sports. If this happens, you will be given a warning. Here is an example
+taken from Clarke et al (2017):
 
 ``` r
 
@@ -181,18 +237,28 @@ res6$probabilities
 #> [1,] 0.8283333 0.1583333 0.05833333 0.008333333 -0.02166667 -0.03166667
 ```
 
-Other packages
-==============
+# Other packages
 
-The only other R package I know of with related functionality is the [gambleR](https://github.com/DataWookie/gambleR) package. The [odds.converter](https://cran.r-project.org/web/packages/odds.converter/index.html) package can convert between different odds formats, including to decimal odds, that this package requires.
+The only other R package I know of with related functionality is the
+[gambleR](https://github.com/DataWookie/gambleR) package. The
+[odds.converter](https://cran.r-project.org/web/packages/odds.converter/index.html)
+package can convert between different odds formats, including to decimal
+odds, that this package requires.
 
-Literature
-==========
+# Literature
 
 Here are some relevant references and links:
 
--   Hyun Song Shin (1991) Optimal betting odds against insider traders. [Link](https://www.jstor.org/stable/2234434)
--   Erik Štrumbelj (2014) On determining probability forecasts from betting odds. [Link](https://www.sciencedirect.com/science/article/pii/S0169207014000533)
--   Joseph Buchdahl - USING THE WISDOM OF THE CROWD TO FIND VALUE IN A FOOTBALL MATCH BETTING MARKET (<http://www.football-data.co.uk/wisdom_of_crowd_bets>)
--   Keith Cheung (2015) Fixed-odds betting and traditional odds (<http://www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/>)
--   Stephen Clarke, Stephanie Kovalchik & Martin Ingram (2017) Adjusting Bookmaker's Odds to Allow for Overround [Link](http://www.sciencepublishinggroup.com/journal/paperinfo?journalid=155&doi=10.11648/j.ajss.20170506.12)
+  - Hyun Song Shin (1991) Optimal betting odds against insider traders.
+    [Link](https://www.jstor.org/stable/2234434)
+  - Erik Štrumbelj (2014) On determining probability forecasts from
+    betting odds.
+    [Link](https://www.sciencedirect.com/science/article/pii/S0169207014000533)
+  - Joseph Buchdahl - USING THE WISDOM OF THE CROWD TO FIND VALUE IN A
+    FOOTBALL MATCH BETTING MARKET
+    (<http://www.football-data.co.uk/wisdom_of_crowd_bets>)
+  - Keith Cheung (2015) Fixed-odds betting and traditional odds
+    (<http://www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/>)
+  - Stephen Clarke, Stephanie Kovalchik & Martin Ingram (2017) Adjusting
+    Bookmaker’s Odds to Allow for Overround
+    [Link](http://www.sciencepublishinggroup.com/journal/paperinfo?journalid=155&doi=10.11648/j.ajss.20170506.12)
