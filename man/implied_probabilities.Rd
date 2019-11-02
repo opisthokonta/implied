@@ -2,59 +2,43 @@
 % Please edit documentation in R/implied_probabilities.R
 \name{implied_probabilities}
 \alias{implied_probabilities}
-\title{Implied probabilities from bookmaker odds.}
+\title{Implied probabilities from bookmaker odds}
 \usage{
-implied_probabilities(odds, method = "basic", normalize = TRUE)
+implied_probabilities(odds, method = c("basic", "shin", "wpo", "or",
+  "power", "additive"), normalize = TRUE)
 }
 \arguments{
-\item{odds}{A matrix or numeric of bookmaker odds. The odds must be in the decimal format.}
+\item{odds}{Data frame, matrix or numeric vector of bookmaker odds. The odds must be in the
+decimal format and be greater than or equal to 1.}
 
-\item{method}{A string giving the method to use. Valid methods are 'basic', 'shin',
-'wpo', 'or', 'power' or 'additive'.}
+\item{method}{The method to be used. See ‘Details’. Can be abbreviated.}
 
-\item{normalize}{Logical. Some of the methods will give small rounding errors. If TRUE (default)
-a final normalization is applied to make absolutely sure the
-probabilities sum to 1.}
-}
-\value{
-A named list. The first component is named 'probabilities' and contain a matrix of
-implied probabilities. The second in the bookmaker margins (aka the overround). The third
-depends on the method used to compute the probabilities:
-\itemize{
- \item{zvalues (method = 'shin'): The estimated amount of insider trade.}
- \item{ specific_margins (method = 'wpo'): Matrix of the margins applied to each outcome.}
- \item{ odds_ratios (method = 'or'): Numeric with the odds ratio that is used to convert true
- probabilities to bookmaker probabilities.}
- \item{ exponents (method = 'power'): The (inverse) exponents that is used to convert true
- probabilities to bookmaker probabilities.}
-}
-
-The fourth component 'problematic' is a logical vector called indicating if any probabilities has fallen
-outside the 0-1 range.
+\item{normalize}{Logical. Some of the methods will give small rounding errors. If \code{TRUE},
+a final normalization is applied to make the probabilities sum to 1.}
 }
 \description{
 This function calculate the implied probabilities from bookmaker odds in decimal format, using five
 different methods to account for overround in the odds.
 }
 \details{
-The method 'basic' is the simplest method, and computes the implied probabilities by
+Method "\code{basic}" is the simplest method, and computes the implied probabilities by
 dividing the inverted odds by the sum of the inverted odds.
 
-The method 'shin' uses the method by Shin (1991). This model assumes that there is a fraction of
+Method "\code{shin}" uses the method by Shin (1991). This model assumes that there is a fraction of
 insider trading, and that the bookmakers tries to maximize their profits. In addition to providing
 implied probabilities, the method also gives an estimate of the proportion if inside trade. The method
 implemented here is based on the description in Štrumbelj (2014).
 
-The methods 'wpo', 'or' and 'power' are form the Wisdom of the Crowds document (the updated version) by
-Joseph Buchdahl. The method 'or' is originally by Cheung (2015), and the method 'power' is there referred
+Methods "\code{wpo}", "\code{or}" and "\code{power}" are form the Wisdom of the Crowds document (the updated version) by
+Joseph Buchdahl. The method "\code{or}" is originally by Cheung (2015), and the method "\code{power}" is there referred
 to as the logarithmic method.
 }
 \references{
 Shin, H. S. (1991). Optimal betting odds against insider traders. Economic Journal, 101(408), 1179-1185.
 
-   Štrumbelj, E. (2014). On determining probability forecasts from betting odds. International journal of forecasting, 30(4), 934-943.
+   Štrumbelj, E. (2014). On determining probability forecasts from betting odds. International Journal of Forecasting, 30(4), 934-943.
 
    Joseph Buchdahl - Using the wisdom of the crowd to find value in a football match betting market \url{http://www.football-data.co.uk/wisdom_of_crowd_bets}
 
-    Keith Cheung (2015) Fixed-odds betting and traditional odds \url{www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/}
+   Keith Cheung (2015) Fixed-odds betting and traditional odds \url{www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/}
 }
