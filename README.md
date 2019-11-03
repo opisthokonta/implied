@@ -22,8 +22,7 @@ each of them with different assumptions about how the bookmakers convert
 their probabilities into odds.
 
 The natural conversion of bookmaker odds into probabilities is to take
-the inverse of the odds. This procedure has two serious problems, as the
-converted probabilities
+the inverse of the odds. This procedure has two serious problems:
 
 1.  The converted probabilities are not proper, as they can sum to more
     than one. The excess probability is called the *bookmaker margin*.
