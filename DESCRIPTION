@@ -1,7 +1,7 @@
 Package: implied
 Type: Package
-Title: Convert Odds To Probabilities
-Version: 0.1.0
+Title: Convert Bookmaker Odds To Probabilities
+Version: 0.2.0
 Author: Jonas Christoffer Lindstrøm
 Maintainer: Jonas Christoffer Lindstrøm <jonaslindstrom88@gmail.com>
 Description: Convert bookmaker odds into proper probabilities.
@@ -9,3 +9,8 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.0
+Suggests:
+    testthat (>= 2.0.1),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

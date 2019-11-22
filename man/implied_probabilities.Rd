@@ -4,24 +4,27 @@
 \alias{implied_probabilities}
 \title{Implied probabilities from bookmaker odds.}
 \usage{
-implied_probabilities(odds, method = "basic", normalize = TRUE)
+implied_probabilities(odds, method = "basic", normalize = TRUE,
+  grossmargin = 0)
 }
 \arguments{
 \item{odds}{A matrix or numeric of bookmaker odds. The odds must be in the decimal format.}
 
-\item{method}{A string giving the method to use. Valid methods are 'basic', 'shin',
+\item{method}{A string giving the method to use. Valid methods are 'basic', 'shin', 'bb',
 'wpo', 'or', 'power' or 'additive'.}
 
 \item{normalize}{Logical. Some of the methods will give small rounding errors. If TRUE (default)
 a final normalization is applied to make absoultely sure the
 probabilities sum to 1.}
+
+\item{grossmargin}{Numeric. Must be 0 or greater. See the details.}
 }
 \value{
 A named list. The first component is named 'probabilities' and contain a matrix of
 implied probabilities. The second in the bookmaker margins (aka the overround). The third
 depends on the method used to compute the probabilities:
 \itemize{
- \item{zvalues (method = 'shin'): The estimated amount of insider trade.}
+ \item{ zvalues (method = 'shin' and method='bb'): The estimated amount of insider trade.}
  \item{ specific_margins (method = 'wpo'): Matrix of the margins applied to each outcome.}
  \item{ odds_ratios (method = 'or'): Numeric with the odds ratio that is used to convert true
  probabilities to bookamker probabilties.}
@@ -30,30 +33,42 @@ depends on the method used to compute the probabilities:
 }
 
 The fourth compnent 'problematic' is a logical vector called indicating if any probabilites has fallen
-outside the 0-1 range.
+outside the 0-1 range, or if there were some other problem computing the probabilities.
 }
 \description{
-This function calculate the implied probabilties from bookmaker odds in decimal format, using five
-different methods to account for overround in the odds.
+This function calculate the implied probabilties from bookmaker odds in decimal format, while
+accounting for overround in the odds.
 }
 \details{
 The method 'basic' is the simplest method, and computes the implied probabilities by
 dividing the inverted odds by the sum of the inverted odds.
 
-The method 'shin' uses the method by Shin (1991). This model assumes that there is a fraction of
+The method 'shin' uses the method by Shin (1992, 1993). This model assumes that there is a fraction of
 insider trading, and that the bookmakers tries to maximize their profits. In addition to providing
 implied probabilties, the method also gives an estimate of the proportion if inside trade. The method
-implemented here is based on the description in Štrumbelj (2014).
+implemented here is based on the algorithm in Jullien & Salanié (1994).
 
-The methods 'wpo', 'or' and 'power' are form the Wisdom of the Crowds document (the updated version) by
+The 'bb' (short for "balanced books") method is from Fingleton & Waldron (1999), and is a variant of Shin's method. It too assume
+a fraction of insiders, but instead of assuming that the bookmakers maximize their profits, they
+minimize their risk.
+
+Both the 'shin' and 'bb' methods can be used together with the 'grossmargin' argument. This is also
+from the Fingleton & Waldron (1999) paper, and adds some further assumption to the calculations,
+related to opperating costs. grossmargin should be 0 (default) or greater, typical range is 0 to 0.05.
+For values other than 0, this might sometimes cause some probabilities to not be identifiable. A warning
+will be given if this happens.
+
+The methods 'wpo' (Weights Proportional to the Odds), 'or' (Odds Ratio) and 'power' are form the Wisdom of the Crowds document (the updated version) by
 Joseph Buchdahl. The method 'or' is origianlly by Cheung (2015), and the method 'power' is there referred
 to as the logarithmic method.
 }
 \section{References}{
 
 \itemize{
- \item{Hyun Song Shin (1991) Optimal betting odds against insider traders.}
- \item{Erik Štrumbelj (2014) On determining probability forecasts from betting odds.}
+ \item{Hyun Song Shin (1992) Prices of State Contingent Claims with Insider Traders, and the Favourite-Longshot Bias }
+ \item{Hyun Song Shin (1993) Measuring the Incidence of Insider Trading in a Market for State-Contingent Claims}
+ \item{Bruno Jullien & Bernard Salanié (1994) Measuring the incidence of insider trading: A comment on Shin.}
+ \item{John Fingleton & Patrick Waldron (1999) Optimal Determination of Bookmakers' Betting Odds: Theory and Tests.}
  \item{Joseph Buchdahl - USING THE WISDOM OF THE CROWD TO FIND VALUE IN A FOOTBALL MATCH BETTING MARKET (http://www.football-data.co.uk/wisdom_of_crowd_bets)}
  \item{Keith Cheung (2015) Fixed-odds betting and traditional odds (www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/)}
 }
