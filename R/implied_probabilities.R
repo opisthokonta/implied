@@ -8,10 +8,18 @@
 #' The method 'basic' is the simplest method, and computes the implied probabilities by
 #' dividing the inverted odds by the sum of the inverted odds.
 #'
+#' The methods 'wpo' (Weights Proportional to the Odds), 'or' (Odds Ratio) and 'power' are form the Wisdom of the Crowds document (the updated version) by
+#' Joseph Buchdahl. The method 'or' is origianlly by Cheung (2015), and the method 'power' is there referred
+#' to as the logarithmic method.
+#'
 #' The method 'shin' uses the method by Shin (1992, 1993). This model assumes that there is a fraction of
 #' insider trading, and that the bookmakers tries to maximize their profits. In addition to providing
-#' implied probabilties, the method also gives an estimate of the proportion if inside trade. The method
-#' implemented here is based on the algorithm in Jullien & Salanié (1994).
+#' implied probabilties, the method also gives an estimate of the proportion if inside trade, denoted z. Two algorithms
+#' are implemented for finding the probabilities and z. Which algorithm to use is chosen via the shin_mehod argument.
+#' The default method (shin_method = 'js') is based on the algorithm in Jullien & Salanié (1994). The 'uniroot'
+#' method uses R's built in equation solver to find the probabilities. The uniroot approach is also used for the
+#' 'pwr' and 'or' methods. The two methods might give slightly different answers, especially when the bookamer margin
+#' (and z) is small.
 #'
 #' The 'bb' (short for "balanced books") method is from Fingleton & Waldron (1999), and is a variant of Shin's method. It too assume
 #' a fraction of insiders, but instead of assuming that the bookmakers maximize their profits, they
@@ -23,10 +31,6 @@
 #' For values other than 0, this might sometimes cause some probabilities to not be identifiable. A warning
 #' will be given if this happens.
 #'
-#' The methods 'wpo' (Weights Proportional to the Odds), 'or' (Odds Ratio) and 'power' are form the Wisdom of the Crowds document (the updated version) by
-#' Joseph Buchdahl. The method 'or' is origianlly by Cheung (2015), and the method 'power' is there referred
-#' to as the logarithmic method.
-#'
 #'
 #'
 #' @param odds A matrix or numeric of bookmaker odds. The odds must be in the decimal format.
@@ -36,10 +40,11 @@
 #' a final normalization is applied to make absoultely sure the
 #' probabilities sum to 1.
 #' @param grossmargin Numeric. Must be 0 or greater. See the details.
+#' @param shin_method Character. Either 'js' (defeault) or 'uniroot'. See the details.
 #'
 #'
 #' @return A named list. The first component is named 'probabilities' and contain a matrix of
-#' implied probabilities. The second in the bookmaker margins (aka the overround). The third
+#' implied probabilities. The second is the bookmaker margins (aka the overround). The third
 #' depends on the method used to compute the probabilities:
 #' \itemize{
 #'  \item{ zvalues (method = 'shin' and method='bb'): The estimated amount of insider trade.}
@@ -60,16 +65,36 @@
 #'  \item{Hyun Song Shin (1993) Measuring the Incidence of Insider Trading in a Market for State-Contingent Claims}
 #'  \item{Bruno Jullien & Bernard Salanié (1994) Measuring the incidence of insider trading: A comment on Shin.}
 #'  \item{John Fingleton & Patrick Waldron (1999) Optimal Determination of Bookmakers' Betting Odds: Theory and Tests.}
-#'  \item{Joseph Buchdahl - USING THE WISDOM OF THE CROWD TO FIND VALUE IN A FOOTBALL MATCH BETTING MARKET (http://www.football-data.co.uk/wisdom_of_crowd_bets)}
-#'  \item{Keith Cheung (2015) Fixed-odds betting and traditional odds (www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/)}
+#'  \item{Joseph Buchdahl - USING THE WISDOM OF THE CROWD TO FIND VALUE IN A FOOTBALL MATCH BETTING MARKET (https://www.football-data.co.uk/wisdom_of_crowd_bets)}
+#'  \item{Keith Cheung (2015) Fixed-odds betting and traditional odds (https://www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/)}
 #' }
+#'
+#' @examples
+#'# Two sets of odds for a three-outcome game.
+#'my_odds <- rbind(c(4.20, 3.70, 1.95),
+#'                 c(2.45, 3.70, 2.90))
+#'
+#'# Convert to probabilities using Shin's method.
+#'converted_odds <- implied_probabilities(my_odds, method='shin')
+#'
+#'# Look at the probabilities
+#'converted_odds$probabilities
+#'
 #' @export
-implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmargin = 0){
+implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmargin = 0,
+                                  shin_method = 'js'){
 
   stopifnot(length(method) == 1,
             tolower(method) %in% c('basic', 'shin', 'bb', 'wpo', 'or', 'power', 'additive'),
             all(odds >= 1),
-            grossmargin >= 0)
+            grossmargin >= 0,
+            shin_method %in% c('js', 'uniroot'),
+            length(shin_method) == 1)
+
+  if (method == 'shin' & shin_method == 'uniroot' & grossmargin != 0){
+    shin_method <- 'js'
+    message('shin_method uniroot does not work when grossmargin is not 0. Method js will be used.')
+  }
 
   if (!is.matrix(odds)){
 
@@ -103,34 +128,45 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
     probs <- matrix(nrow=n_odds, ncol=n_outcomes)
 
     problematic_shin <- logical(n_odds)
-    for (ii in 1:n_odds){
 
-      # initialize zz at 0
-      zz_tmp <- 0
+    if (shin_method == 'js'){
+    #if (shin_method == 'js' | grossmargin != 0){
+      for (ii in 1:n_odds){
 
-      for (jj in 1:1000){
-        zz_prev <- zz_tmp
+        # initialize zz at 0
+        zz_tmp <- 0
 
-        if (grossmargin != 0){
-          zz_tmp <- (sum(sqrt(zz_prev^2 + 4*(1 - zz_prev) * (((inverted_odds[ii,]^2 * (1-grossmargin)))/inverted_odds_sum[ii])))-2) / (n_outcomes - 2)
-        } else {
-          zz_tmp <- (sum(sqrt(zz_prev^2 + 4*(1 - zz_prev) * (((inverted_odds[ii,])^2)/inverted_odds_sum[ii])))-2) / (n_outcomes - 2)
+        for (jj in 1:1000){
+          zz_prev <- zz_tmp
+
+          if (grossmargin != 0){
+            zz_tmp <- (sum(sqrt(zz_prev^2 + 4*(1 - zz_prev) * (((inverted_odds[ii,]^2 * (1-grossmargin)))/inverted_odds_sum[ii])))-2) / (n_outcomes - 2)
+          } else {
+            zz_tmp <- (sum(sqrt(zz_prev^2 + 4*(1 - zz_prev) * (((inverted_odds[ii,])^2)/inverted_odds_sum[ii])))-2) / (n_outcomes - 2)
+          }
+
+          if (abs(zz_tmp - zz_prev)  <= .Machine$double.eps^0.25){
+            break
+          } else if (jj >= 1000){
+            problematic_shin[ii] <- TRUE
+          }
+
+          zvalues[ii] <- zz_tmp
+          probs[ii,] <- shin_func(zz=zz_tmp, io = inverted_odds[ii,])
         }
-
-        if (abs(zz_tmp - zz_prev)  <= .Machine$double.eps^0.25){
-          break
-        } else if (jj >= 1000){
-          problematic_shin[ii] <- TRUE
-        }
-
-        zvalues[ii] <- zz_tmp
-        probs[ii,] <- shin_func(zz=zz_tmp, io = inverted_odds[ii,])
       }
+    } else {
+      for (ii in 1:n_odds){
+        res <- stats::uniroot(f=shin_solvefor, interval = c(0,0.4), io=inverted_odds[ii,])
 
-      out$probabilities <- probs
-      out$zvalues <- zvalues
+        zvalues[ii] <- res$root
+        probs[ii,] <- shin_func(zz=res$root, io = inverted_odds[ii,])
 
+      }
     }
+
+    out$probabilities <- probs
+    out$zvalues <- zvalues
 
     if (any(problematic_shin)){
       warning(sprintf('Could not find z: Did not converge in %d instances. Some results may be unreliable. See the "problematic" vector in the output.',
@@ -205,6 +241,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
 
   # check if there are any probabilites outside the 0-1 range.
   problematic <- apply(out$probabilities, MARGIN = 1, FUN=function(x){any(x > 1 | x < 0)})
+  problematic[is.na(problematic)] <- TRUE
   if (any(problematic)){
     warning(sprintf('Probabilities outside the 0-1 range produced at %d instances.\n',
                     sum(problematic)))
@@ -247,6 +284,15 @@ shin_func <- function(zz, io){
 # io = inverted odds.
 or_func <- function(cc, io){
   io / (cc + io - (cc*io))
+}
+
+
+
+# the condition that the sum of the probabilites must sum to 1.
+# Used with uniroot.
+shin_solvefor <- function(zz, io){
+  tmp <- shin_func(zz, io)
+  1 - sum(tmp) # 0 when the condition is satisfied.
 }
 
 # The condition that the sum of the probabilites must sum to 1.
