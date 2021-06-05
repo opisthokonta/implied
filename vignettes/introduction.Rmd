@@ -59,7 +59,7 @@ This method is from [Joseph Buchdahl's Wisom of the Crowds document](https://www
 
 The probabilities are calculated from the bookmaker odds <i>O</i> using the following formula
 
-<i>p<sub>i</sub></i> = n * O<sub>i</sub> / (n - M * O<sub>i</sub>)
+<i>p<sub>i</sub></i> = (n - M * O<sub>i</sub>) / n * O<sub>i</sub>
 
 where n is the number of outcomes, and M is the bookmaker margin.
 
