@@ -86,7 +86,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
 
   stopifnot(length(method) == 1,
             tolower(method) %in% c('basic', 'shin', 'bb', 'wpo', 'or', 'power', 'additive'),
-            all(odds >= 1),
+            all(odds >= 1, na.rm=TRUE),
             grossmargin >= 0,
             shin_method %in% c('js', 'uniroot'),
             length(shin_method) == 1)
@@ -119,6 +119,16 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
   inverted_odds_sum <- rowSums(inverted_odds)
   out$margin <- inverted_odds_sum - 1
 
+  # Missing values
+  missing_idx <- apply(odds, MARGIN = 1,
+                       FUN = function(x) any(is.na(x)))
+
+
+  if (any(inverted_odds_sum[!missing_idx] < 1)){
+    stop('Some inverse odds sum to less than 1.')
+  }
+
+
   if (method == 'basic'){
     out$probabilities <- inverted_odds / inverted_odds_sum
 
@@ -132,6 +142,11 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
     if (shin_method == 'js'){
     #if (shin_method == 'js' | grossmargin != 0){
       for (ii in 1:n_odds){
+
+        # Skip rows with missing values.
+        if (missing_idx[ii] == TRUE){
+          next
+        }
 
         # initialize zz at 0
         zz_tmp <- 0
@@ -157,6 +172,12 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
       }
     } else {
       for (ii in 1:n_odds){
+
+        # Skip rows with missing values.
+        if (missing_idx[ii] == TRUE){
+          next
+        }
+
         res <- stats::uniroot(f=shin_solvefor, interval = c(0,0.4), io=inverted_odds[ii,])
 
         zvalues[ii] <- res$root
@@ -168,7 +189,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
     out$probabilities <- probs
     out$zvalues <- zvalues
 
-    if (any(problematic_shin)){
+    if (any(problematic_shin[!missing_idx])){
       warning(sprintf('Could not find z: Did not converge in %d instances. Some results may be unreliable. See the "problematic" vector in the output.',
                       sum(problematic_shin)))
     }
@@ -194,6 +215,12 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
     probs <- matrix(nrow=n_odds, ncol=n_outcomes)
 
     for (ii in 1:n_odds){
+
+      # Skip rows with missing values.
+      if (missing_idx[ii] == TRUE){
+        next
+      }
+
       res <- stats::uniroot(f=or_solvefor, interval = c(0.05, 5), io=inverted_odds[ii,])
       odds_ratios[ii] <- res$root
       probs[ii,] <- or_func(cc=res$root, io = inverted_odds[ii,])
@@ -208,6 +235,12 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
     exponents <- numeric(n_odds)
 
     for (ii in 1:n_odds){
+
+      # Skip rows with missing values.
+      if (missing_idx[ii] == TRUE){
+        next
+      }
+
       res <- stats::uniroot(f=pwr_solvefor, interval = c(0.001, 1), io=inverted_odds[ii,])
       exponents[ii] <- res$root
       probs[ii,] <- pwr_func(nn=res$root, io = inverted_odds[ii,])
@@ -221,6 +254,12 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
     probs <- matrix(nrow=n_odds, ncol=n_outcomes)
 
     for (ii in 1:n_odds){
+
+      # Skip rows with missing values.
+      if (missing_idx[ii] == TRUE){
+        next
+      }
+
       probs[ii,] <- inverted_odds[ii,] - ((inverted_odds_sum[ii] - 1) / n_outcomes)
     }
 
@@ -242,7 +281,9 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
   # check if there are any probabilites outside the 0-1 range.
   problematic <- apply(out$probabilities, MARGIN = 1, FUN=function(x){any(x > 1 | x < 0)})
   problematic[is.na(problematic)] <- TRUE
-  if (any(problematic)){
+  problematic[missing_idx] <- NA
+
+  if (any(problematic, na.rm=TRUE)){
     warning(sprintf('Probabilities outside the 0-1 range produced at %d instances.\n',
                     sum(problematic)))
   }
@@ -253,7 +294,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
 
   if (method %in% c('shin', 'bb')){
     negative_z <- out$zvalues < 0
-    if (any(negative_z)){
+    if (any(negative_z[!missing_idx])){
       warning(sprintf('z estimated to be negative: Some results may be unreliable. See the "problematic" vector in the output.',
                       negative_z))
     }

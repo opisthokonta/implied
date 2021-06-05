@@ -10,7 +10,10 @@ my_odds <- rbind(c(4.20, 3.70, 1.95),
 my_odds2 <- t(matrix(1/c(0.870, 0.2, 0.1, 0.05, 0.02, 0.01)))
 
 
+
 context("Implied probabilities")
+
+
 
 iprobs1_basic <- implied_probabilities(my_odds)
 iprobs1_shin <- implied_probabilities(my_odds, method='shin')
@@ -33,6 +36,7 @@ iprobs2_shin <- implied_probabilities(my_odds2, method='shin')
 iprobs2_shin3 <- implied_probabilities(my_odds2, method='shin', shin_method = 'uniroot')
 iprobs2_or <- implied_probabilities(my_odds2, method='or')
 iprobs2_power <- implied_probabilities(my_odds2, method='power')
+
 
 
 # tolerance for some tests
@@ -67,6 +71,9 @@ test_that("Output", {
   expect_warning(
     iprobs2_wpo <- implied_probabilities(my_odds2, method='wpo')
   )
+
+  # New in version 0.3.1, should give error.
+  expect_error(implied_probabilities(my_odds[,1:2]))
 
   expect_equal(class(iprobs1_basic), 'list')
   expect_equal(class(iprobs1_shin), 'list')
@@ -180,6 +187,83 @@ test_that("Non-normalized results", {
   expect_true(all(abs((rowSums(iprobs1_or_nn$probabilities) - 1)) < 0.01))
   expect_true(all(abs((rowSums(iprobs1_power_nn$probabilities) - 1)) < 0.01))
   expect_true(all(abs((rowSums(iprobs1_additive_nn$probabilities) - 1)) < 0.01))
+})
+
+
+context("Missing values")
+
+# some example odds, with missing value
+my_odds_na <- rbind(c(4.20, 3.70, 1.95),
+                    c(2.45, NA, 2.90),
+                    c(2.05, 3.20, 3.80))
+
+# Test with missing values
+
+iprobs1na_basic <- implied_probabilities(my_odds_na)
+iprobs1na_shin <- implied_probabilities(my_odds_na, method='shin')
+iprobs1na_shin2 <- implied_probabilities(my_odds_na, method='shin', grossmargin = 0.01)
+iprobs1na_shin3 <- implied_probabilities(my_odds_na, method='shin', shin_method = 'uniroot')
+iprobs1na_bb <- implied_probabilities(my_odds_na, method='bb')
+iprobs1na_bb2 <- implied_probabilities(my_odds_na, method='bb', grossmargin = 0.01)
+iprobs1na_wpo <- implied_probabilities(my_odds_na, method='wpo')
+iprobs1na_or <- implied_probabilities(my_odds_na, method='or')
+iprobs1na_power <- implied_probabilities(my_odds_na, method='power')
+iprobs1na_additive <- implied_probabilities(my_odds_na, method='additive')
+
+
+test_that("missing values", {
+
+  expect_true(all(is.na(iprobs1na_basic$probabilities[2,])))
+  expect_true(is.na(iprobs1na_basic$problematic[2]))
+  expect_true(is.na(iprobs1na_basic$margin[2]))
+  expect_false(is.na(iprobs1na_basic$problematic[1]))
+  expect_false(is.na(iprobs1na_basic$margin[1]))
+
+
+  expect_true(all(is.na(iprobs1na_shin$probabilities[2,])))
+  expect_true(is.na(iprobs1na_shin$problematic[2]))
+  expect_false(is.na(iprobs1na_shin$problematic[1]))
+  expect_false(is.na(iprobs1na_shin$margin[1]))
+
+  expect_true(all(is.na(iprobs1na_shin2$probabilities[2,])))
+  expect_true(is.na(iprobs1na_shin2$problematic[2]))
+  expect_false(is.na(iprobs1na_shin2$problematic[1]))
+  expect_false(is.na(iprobs1na_shin2$margin[1]))
+
+  expect_true(all(is.na(iprobs1na_shin3$probabilities[2,])))
+  expect_true(is.na(iprobs1na_shin3$problematic[2]))
+  expect_false(is.na(iprobs1na_shin3$problematic[1]))
+  expect_false(is.na(iprobs1na_shin3$margin[1]))
+
+  expect_true(all(is.na(iprobs1na_bb$probabilities[2,])))
+  expect_true(is.na(iprobs1na_bb$problematic[2]))
+  expect_false(is.na(iprobs1na_bb$problematic[1]))
+  expect_false(is.na(iprobs1na_bb$margin[1]))
+
+  expect_true(all(is.na(iprobs1na_bb2$probabilities[2,])))
+  expect_true(is.na(iprobs1na_bb2$problematic[2]))
+  expect_false(is.na(iprobs1na_bb2$problematic[1]))
+  expect_false(is.na(iprobs1na_bb2$margin[1]))
+
+  expect_true(all(is.na(iprobs1na_wpo$probabilities[2,])))
+  expect_true(is.na(iprobs1na_wpo$problematic[2]))
+  expect_false(is.na(iprobs1na_wpo$problematic[1]))
+  expect_false(is.na(iprobs1na_wpo$margin[1]))
+
+  expect_true(all(is.na(iprobs1na_or$probabilities[2,])))
+  expect_true(is.na(iprobs1na_or$problematic[2]))
+  expect_false(is.na(iprobs1na_or$problematic[1]))
+  expect_false(is.na(iprobs1na_or$margin[1]))
+
+  expect_true(all(is.na(iprobs1na_power$probabilities[2,])))
+  expect_true(is.na(iprobs1na_power$problematic[2]))
+  expect_false(is.na(iprobs1na_power$problematic[1]))
+  expect_false(is.na(iprobs1na_power$margin[1]))
+
+  expect_true(all(is.na(iprobs1na_additive$probabilities[2,])))
+  expect_true(is.na(iprobs1na_additive$problematic[2]))
+  expect_false(is.na(iprobs1na_additive$problematic[1]))
+  expect_false(is.na(iprobs1na_additive$margin[1]))
 })
 
 
