@@ -3,7 +3,8 @@
 # some example odds
 my_odds <- rbind(c(4.20, 3.70, 1.95),
                  c(2.45, 3.70, 2.90),
-                 c(2.05, 3.20, 3.80))
+                 c(2.05, 3.20, 3.80),
+                 c(1.595, 3.990, 6.760))
 
 # Some odds desinged to be problematic with the additive method.
 # It is also problematic with the wpo method.
@@ -25,11 +26,11 @@ iprobs1_wpo <- implied_probabilities(my_odds, method='wpo')
 iprobs1_or <- implied_probabilities(my_odds, method='or')
 iprobs1_power <- implied_probabilities(my_odds, method='power')
 iprobs1_additive <- implied_probabilities(my_odds, method='additive')
+iprobs1_kl <- implied_probabilities(my_odds, method='kl')
 
 # Shin method uniroot, with grossmargin != 0 should switch to shin_method = 'js'
 # Make sure the output is the same.
 iprobs1_shin4 <- implied_probabilities(my_odds, method='shin', shin_method = 'uniroot', grossmargin = 0.01)
-
 
 iprobs2_basic <- implied_probabilities(my_odds2)
 iprobs2_shin <- implied_probabilities(my_odds2, method='shin')
@@ -37,6 +38,8 @@ iprobs2_shin3 <- implied_probabilities(my_odds2, method='shin', shin_method = 'u
 iprobs2_or <- implied_probabilities(my_odds2, method='or')
 iprobs2_power <- implied_probabilities(my_odds2, method='power')
 
+# The KL method does not work with my_odds2.
+#iprobs2_kl <- implied_probabilities(my_odds2, method='kl')
 
 
 # tolerance for some tests
@@ -65,6 +68,7 @@ test_that("Output", {
   expect_silent(
     iprobs2_power <- implied_probabilities(my_odds2, method='power')
   )
+
   expect_warning(
     iprobs2_additive <- implied_probabilities(my_odds2, method='additive')
   )
@@ -84,7 +88,7 @@ test_that("Output", {
   expect_equal(class(iprobs1_wpo), 'list')
   expect_equal(class(iprobs1_or), 'list')
   expect_equal(class(iprobs1_additive), 'list')
-  expect_equal(class(iprobs1_additive), 'list')
+  expect_equal(class(iprobs1_kl), 'list')
 
   expect_equal(all(abs(rowSums(iprobs1_basic$probabilities) - 1) < toll), TRUE)
   expect_equal(all(abs(rowSums(iprobs1_shin$probabilities) - 1) < toll), TRUE)
@@ -96,6 +100,7 @@ test_that("Output", {
   expect_equal(all(abs(rowSums(iprobs1_or$probabilities) - 1) < toll), TRUE)
   expect_equal(all(abs(rowSums(iprobs1_power$probabilities) - 1) < toll), TRUE)
   expect_equal(all(abs(rowSums(iprobs1_additive$probabilities) - 1) < toll), TRUE)
+  expect_equal(all(abs(rowSums(iprobs1_kl$probabilities) - 1) < toll), TRUE)
 
   expect_equal(all(iprobs1_basic$margin > 0), TRUE)
   expect_equal(all(iprobs1_shin$margin > 0), TRUE)
@@ -107,6 +112,7 @@ test_that("Output", {
   expect_equal(all(iprobs1_or$margin > 0), TRUE)
   expect_equal(all(iprobs1_power$margin > 0), TRUE)
   expect_equal(all(iprobs1_additive$margin > 0), TRUE)
+  expect_equal(all(iprobs1_kl$margin > 0), TRUE)
 
   expect_equal(is.null(iprobs1_shin$zvalues), FALSE)
   expect_equal(is.null(iprobs1_shin2$zvalues), FALSE)
@@ -116,6 +122,7 @@ test_that("Output", {
   expect_equal(is.null(iprobs1_wpo$specific_margins), FALSE)
   expect_equal(is.null(iprobs1_or$odds_ratios), FALSE)
   expect_equal(is.null(iprobs1_power$exponents), FALSE)
+  expect_equal(is.null(iprobs1_kl$divergence), FALSE)
 
 
   expect_equal(class(iprobs2_basic), 'list')
@@ -124,7 +131,6 @@ test_that("Output", {
   expect_equal(class(iprobs2_shin3), 'list')
   expect_equal(class(iprobs2_wpo), 'list')
   expect_equal(class(iprobs2_or), 'list')
-  expect_equal(class(iprobs2_additive), 'list')
   expect_equal(class(iprobs2_additive), 'list')
 
   expect_equal(all(abs(rowSums(iprobs2_basic$probabilities) - 1) < toll), TRUE)
@@ -174,6 +180,7 @@ iprobs1_wpo_nn <- implied_probabilities(my_odds, method='wpo', normalize = FALSE
 iprobs1_or_nn <- implied_probabilities(my_odds, method='or', normalize = FALSE)
 iprobs1_power_nn <- implied_probabilities(my_odds, method='power', normalize = FALSE)
 iprobs1_additive_nn <- implied_probabilities(my_odds, method='additive', normalize = FALSE)
+iprobs1_kl_nn <- implied_probabilities(my_odds, method='kl', normalize = FALSE)
 
 # They should all be reasonably close to 1.
 test_that("Non-normalized results", {
@@ -187,6 +194,8 @@ test_that("Non-normalized results", {
   expect_true(all(abs((rowSums(iprobs1_or_nn$probabilities) - 1)) < 0.01))
   expect_true(all(abs((rowSums(iprobs1_power_nn$probabilities) - 1)) < 0.01))
   expect_true(all(abs((rowSums(iprobs1_additive_nn$probabilities) - 1)) < 0.01))
+  expect_true(all(abs((rowSums(iprobs1_kl_nn$probabilities) - 1)) < 0.01))
+
 })
 
 
@@ -209,6 +218,7 @@ iprobs1na_wpo <- implied_probabilities(my_odds_na, method='wpo')
 iprobs1na_or <- implied_probabilities(my_odds_na, method='or')
 iprobs1na_power <- implied_probabilities(my_odds_na, method='power')
 iprobs1na_additive <- implied_probabilities(my_odds_na, method='additive')
+iprobs1na_kl <- implied_probabilities(my_odds_na, method='kl')
 
 
 test_that("missing values", {
@@ -264,6 +274,13 @@ test_that("missing values", {
   expect_true(is.na(iprobs1na_additive$problematic[2]))
   expect_false(is.na(iprobs1na_additive$problematic[1]))
   expect_false(is.na(iprobs1na_additive$margin[1]))
+
+  expect_true(all(is.na(iprobs1na_kl$probabilities[2,])))
+  expect_true(is.na(iprobs1na_kl$problematic[2]))
+  expect_false(is.na(iprobs1na_kl$problematic[1]))
+  expect_false(is.na(iprobs1na_kl$margin[1]))
+
+
 })
 
 

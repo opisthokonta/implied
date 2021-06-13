@@ -85,7 +85,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
                                   shin_method = 'js'){
 
   stopifnot(length(method) == 1,
-            tolower(method) %in% c('basic', 'shin', 'bb', 'wpo', 'or', 'power', 'additive'),
+            tolower(method) %in% c('basic', 'shin', 'bb', 'wpo', 'or', 'power', 'additive', 'kl'),
             all(odds >= 1, na.rm=TRUE),
             grossmargin >= 0,
             shin_method %in% c('js', 'uniroot'),
@@ -265,6 +265,27 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
 
     out$probabilities <- probs
 
+  } else if (method == 'kl'){
+
+    probs <- matrix(nrow=n_odds, ncol=n_outcomes)
+    klds <- numeric(n_odds)
+
+    for (ii in 1:n_odds){
+      # Skip rows with missing values.
+      if (missing_idx[ii] == TRUE){
+        next
+      }
+
+      res <- stats::uniroot(f=kl_solvefor, interval = c(0.0000001, 1), io=inverted_odds[ii,],
+                            tol=0.0000001)
+      klds[ii] <- res$root
+      probs[ii,] <- kl_func(kl=res$root, io = inverted_odds[ii,])
+    }
+
+    out$probabilities <- probs
+    out$divergence <- klds
+
+
   }
 
   ## do a final normalization to make sure the probabilites
@@ -312,7 +333,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
 # and be used with uniroot.
 #########################################################
 
-# Calculate the probabilities usin Shin's formula, for a given value of z.
+# Calculate the probabilities using Shin's formula, for a given value of z.
 # io = inverted odds.
 shin_func <- function(zz, io){
   bb <- sum(io)
@@ -320,13 +341,12 @@ shin_func <- function(zz, io){
 }
 
 
-# Calculate the probabilities usin the odds ratio method,
+# Calculate the probabilities using the odds ratio method,
 # for a given value of the odds ratio cc.
 # io = inverted odds.
 or_func <- function(cc, io){
   io / (cc + io - (cc*io))
 }
-
 
 
 # the condition that the sum of the probabilites must sum to 1.
@@ -357,4 +377,40 @@ pwr_solvefor <- function(nn, io){
   sum(tmp) - 1
 }
 
+
+# The binomial symmetric Kullback-Leibler divergence.
+binom_symkld <- function(p, io){
+
+  pvec <- c(p, 1-p)
+  iovec <- c(io, 1-io)
+
+  sum(pvec * (log(pvec/iovec))) + sum(iovec * (log(iovec/pvec)))
+}
+
+# Find the probabilties for a given KL-divergence and inverted odds.
+kl_func <- function(kl, io){
+
+  # The function to be used by uniroot to find p from kl and io.
+  tosolve <- function(p, io, kl){
+    binom_symkld(p=p, io = io) - kl
+  }
+
+  pp <- numeric(length(io))
+  for (ii in 1:length(io)){
+    # Intervall from approx 0 to io, implying
+    # That the underlying probability i less than the
+    # inverse odds.
+    pp[ii] <- uniroot(f = tosolve,
+                      interval = c(0.00001, io[ii]),
+                      io = io[ii], kl = kl)$root
+  }
+  return(pp)
+}
+
+# Calculate the probabilities using the symmetric Kullback-Leibler divergence method,
+# for a given value of the odds ratio cc.
+# io = inverted odds.
+kl_solvefor <- function(kl, io){
+  sum(kl_func(kl=kl, io = io)) - 1
+}
 
