@@ -72,6 +72,9 @@ from the Fingleton & Waldron (1999) paper, and adds some further assumption to t
 related to opperating costs. grossmargin should be 0 (default) or greater, typical range is 0 to 0.05.
 For values other than 0, this might sometimes cause some probabilities to not be identifiable. A warning
 will be given if this happens.
+
+The method 'kl' was developed by Christopher D. Long, and described in a series of Twitter postings
+and a python implementation posted on GitHub.
 }
 \section{References}{
 

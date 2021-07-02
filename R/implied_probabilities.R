@@ -31,6 +31,8 @@
 #' For values other than 0, this might sometimes cause some probabilities to not be identifiable. A warning
 #' will be given if this happens.
 #'
+#' The method 'kl' was developed by Christopher D. Long, and described in a series of Twitter postings
+#' and a python implementation posted on GitHub.
 #'
 #'
 #' @param odds A matrix or numeric of bookmaker odds. The odds must be in the decimal format.
@@ -208,7 +210,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
     # Method from the Wisdom of the Crowds pdf.
     fair_odds <- (n_outcomes * odds) / (n_outcomes - (out$margin * odds))
     out$probabilities <- 1 / fair_odds
-    out$specific_margins = (out$margin * fair_odds) / n_outcomes
+    out$specific_margins <- (out$margin * fair_odds) / n_outcomes
   } else if (method == 'or'){
 
     odds_ratios <- numeric(n_odds)
@@ -241,7 +243,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
         next
       }
 
-      res <- stats::uniroot(f=pwr_solvefor, interval = c(0.001, 1), io=inverted_odds[ii,])
+      res <- stats::uniroot(f=pwr_solvefor, interval = c(0.0001, 1), io=inverted_odds[ii,])
       exponents[ii] <- res$root
       probs[ii,] <- pwr_func(nn=res$root, io = inverted_odds[ii,])
     }
@@ -400,7 +402,7 @@ kl_func <- function(kl, io){
     # Intervall from approx 0 to io, implying
     # That the underlying probability i less than the
     # inverse odds.
-    pp[ii] <- uniroot(f = tosolve,
+    pp[ii] <- stats::uniroot(f = tosolve,
                       interval = c(0.00001, io[ii]),
                       io = io[ii], kl = kl)$root
   }
@@ -413,4 +415,5 @@ kl_func <- function(kl, io){
 kl_solvefor <- function(kl, io){
   sum(kl_func(kl=kl, io = io)) - 1
 }
+
 

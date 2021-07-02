@@ -142,6 +142,8 @@ res6$probabilities
 ```
 
 
+
+ 
 ## Balanced books and Shin's method
 
 The two methods referred to as "balanced book" and Shin's method are based on the assumption that there is a small proportion of bettors that actually knows the outcome (called inside traders), and the rest of the bettors reflect the otherwise "true" uncertainty about the outcome. The proportion of inside traders is denoted Z. 
@@ -171,6 +173,51 @@ res8$probabilities
 res8$zvalues
 ```
 
+
+## The symmetric Kullback–Leibler divergence method
+
+This method sees the improper bookmaker probabilties as a noisy version of the true underlying probabilities, and uses the [symmetric Kullback-Leibler (KL) divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence#Symmetrised_divergence) as a measure of how noisy the bookmaker probabilities are.
+
+For the sake of finding the denoised proabilities <i>p<sub>i</sub></i>, each outcome i is modelled as a binomial variable, with outcomes i and NOT i. These have probabilities <i>p<sub>i</sub></i> and 1-<i>p<sub>i</sub></i>, with corresponding improper bookmaker probabilities <i>r<sub>i</sub></i> and 1-<i>r<sub>i</sub></i>. For a given noise-level K, as measued by the symmetric KL divergence, the underlying probabilities can be found by solving the KL equation for <i>p<sub>i</sub></i>:
+
+K = <i>p<sub>i</sub></i> * log(<i>p<sub>i</sub></i>/<i>q<sub>i</sub></i>) + (1-<i>p<sub>i</sub></i>) * log((1-<i>p<sub>i</sub></i>)/(1-<i>q<sub>i</sub></i>))) + <i>q<sub>i</sub></i> * log(<i>q<sub>i</sub></i>/<i>p<sub>i</sub></i>) + (1-<i>q<sub>i</sub></i>) * log((1-<i>q<sub>i</sub></i>)/(1-<i>p<sub>i</sub></i>))
+
+This is done numerically. The value of of <i>K</i> is found so that sum(<i>p<sub>i</sub></i>) = 1.
+
+The method was developed by Christopher D. Long (twitter: [\@octonion](https://twitter.com/octonion)), and described in a series of Twitter postings [[1](https://twitter.com/octonion/status/1403597915138953216)] [[2](https://twitter.com/octonion/status/1403843296443633665)] and a python implementation posted on GitHub ([Link](https://github.com/octonion/betting/tree/master/conversion)).
+
+```{r kl}
+# Balanced books
+res9 <- implied_probabilities(my_odds, method = 'kl')
+
+res9$probabilities
+
+# The estimated noise (KL divergence)
+res9$divergence
+```
+
+## Converting probabilities to odds
+
+There is also a function that can do the opposite what the implied_probabilities() function does, namely the implied_odds() function. This function converts probabilities to odds, for a given margin, the inverse of the methods as described above. Not all methods have been implemented yet. Take a look at the help file for the function for more details.
+
+In the code example below we use take the results of converting the odds to probabilities using the power method, and convert them back to odds again, with the same margin. We pretty much recover the original odds, except for some small numerical inaccuracy.
+
+
+```{r imp_odds1}
+
+res_odds1 <- implied_odds(res4$probabilities[1,], 
+                     margin = res4$margin[1], 
+                     method = 'power')
+
+res_odds1$odds
+
+# The exponents.
+res_odds1$exponents
+
+# Compare to the exponent from the odds-to-probability conversion.
+res4$exponents[1]
+
+```
 
 
 ## Other packages

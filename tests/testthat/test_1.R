@@ -13,7 +13,7 @@ my_odds2 <- t(matrix(1/c(0.870, 0.2, 0.1, 0.05, 0.02, 0.01)))
 
 
 # tolerance for some tests
-toll <- 0.0001
+toll <- 0.00005
 
 
 context("Implied probabilities")
@@ -309,11 +309,6 @@ iodds1_wpo0 <- implied_odds(my_probs, method='wpo', margin = 0)
 iodds1_or0 <- implied_odds(my_probs, method='or', margin = 0)
 iodds1_power0 <- implied_odds(my_probs, method='power', margin = 0)
 iodds1_additive0 <- implied_odds(my_probs, method='additive', margin = 0)
-
-
-
-
-
 
 
 
