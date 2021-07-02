@@ -12,6 +12,10 @@ my_odds2 <- t(matrix(1/c(0.870, 0.2, 0.1, 0.05, 0.02, 0.01)))
 
 
 
+# tolerance for some tests
+toll <- 0.0001
+
+
 context("Implied probabilities")
 
 
@@ -42,8 +46,6 @@ iprobs2_power <- implied_probabilities(my_odds2, method='power')
 #iprobs2_kl <- implied_probabilities(my_odds2, method='kl')
 
 
-# tolerance for some tests
-toll <- 0.0001
 
 
 test_that("Output", {
@@ -284,4 +286,128 @@ test_that("missing values", {
 })
 
 
+
+context("Implied odds")
+
+
+my_probs <- rbind((1/c(1.5, 5, 7.5)),
+                  c(0.1, 0.2, 0.7),
+                  c(0.01, 0.3, 0.69))
+
+my_margin <- 0.022
+
+
+iodds1_basic <- implied_odds(my_probs, method='basic', margin = my_margin)
+iodds1_wpo <- implied_odds(my_probs, method='wpo', margin = my_margin)
+iodds1_or <- implied_odds(my_probs, method='or', margin = my_margin)
+iodds1_power <- implied_odds(my_probs, method='power', margin = my_margin)
+iodds1_additive <- implied_odds(my_probs, method='additive', margin = my_margin)
+
+
+iodds1_basic0 <- implied_odds(my_probs, method='basic', margin = 0)
+iodds1_wpo0 <- implied_odds(my_probs, method='wpo', margin = 0)
+iodds1_or0 <- implied_odds(my_probs, method='or', margin = 0)
+iodds1_power0 <- implied_odds(my_probs, method='power', margin = 0)
+iodds1_additive0 <- implied_odds(my_probs, method='additive', margin = 0)
+
+
+
+
+
+
+
+
+test_that("Output", {
+
+  expect_equal(class(iodds1_basic), 'list')
+  expect_equal(class(iodds1_wpo), 'list')
+  expect_equal(class(iodds1_wpo0), 'list')
+  expect_equal(class(iodds1_or), 'list')
+  expect_equal(class(iodds1_or0), 'list')
+  expect_equal(class(iodds1_power), 'list')
+  expect_equal(class(iodds1_power0), 'list')
+  expect_equal(class(iodds1_additive), 'list')
+  expect_equal(class(iodds1_additive0), 'list')
+
+
+  # Sum of improper probabilties sum to 1 + margin
+  expect_true(all(abs(rowSums(1 / iodds1_basic$odds) - (1 + my_margin)) <= toll))
+  expect_true(all(abs(rowSums(1 / iodds1_wpo$odds) - (1 + my_margin)) <= toll))
+  expect_true(all(abs(rowSums(1 / iodds1_or$odds) - (1 + my_margin)) <= toll))
+  expect_true(all(abs(rowSums(1 / iodds1_power$odds) - (1 + my_margin)) <= toll))
+  expect_true(all(abs(rowSums(1 / iodds1_additive$odds) - (1 + my_margin)) <= toll))
+
+  # When theres no margin, probabilities should sum to 1.
+  expect_true(all(abs(rowSums(1 / iodds1_basic0$odds) - 1) <= toll))
+  expect_true(all(abs(rowSums(1 / iodds1_wpo0$odds) - 1) <= toll))
+  expect_true(all(abs(rowSums(1 / iodds1_or0$odds) - 1) <= toll))
+  expect_true(all(abs(rowSums(1 / iodds1_power0$odds) - 1) <= toll))
+  expect_true(all(abs(rowSums(1 / iodds1_additive0$odds) - 1) <= toll))
+
+  # Check the coefficients for being alright.
+  expect_true(all(iodds1_or$odds_ratios > 1))
+  expect_true(all(iodds1_or0$odds_ratios == 1))
+
+  expect_true(all(iodds1_power0$exponents == 1))
+  expect_true(all(iodds1_power$exponents < 1))
+
+  expect_true(all(iodds1_additive$odds > 1))
+  expect_true(all(iodds1_additive0$odds > 1))
+
+
+  # Check the odds.
+  expect_true(all(iodds1_basic$odds > 1))
+  expect_true(all(iodds1_wpo$odds > 1))
+  expect_true(all(iodds1_or$odds > 1))
+  expect_true(all(iodds1_power$odds > 1))
+  expect_true(all(iodds1_additive$odds > 1))
+
+  expect_true(all(iodds1_basic0$odds > 1))
+  expect_true(all(iodds1_wpo0$odds > 1))
+  expect_true(all(iodds1_or0$odds > 1))
+  expect_true(all(iodds1_power0$odds > 1))
+  expect_true(all(iodds1_additive0$odds > 1))
+
+})
+
+
+context("Converting between odds and probabilities")
+
+
+# Re-compute odds.
+
+
+idx <- 3 # The row in my_odds to check.
+
+iodds1_basic_r <- implied_odds(iprobs1_basic$probabilities[idx,],
+                               method='basic', margin = iprobs1_basic$margin[idx])
+# Re-compute odds
+iodds1_wpo_r <- implied_odds(iprobs1_wpo$probabilities[idx,],
+                             method='wpo', margin = iprobs1_wpo$margin[idx])
+
+iodds1_or_r <- implied_odds(iprobs1_or$probabilities[idx,],
+                            method='or', margin = iprobs1_or$margin[idx])
+
+iodds1_power_r <- implied_odds(iprobs1_power$probabilities[idx,],
+                               method='power', margin = iprobs1_power$margin[idx])
+
+iodds1_additive_r <- implied_odds(iprobs1_additive$probabilities[idx,],
+                                  method='additive', margin = iprobs1_additive$margin[idx])
+
+
+test_that("Results", {
+
+  # Check that we can recover the original odds.
+  expect_true(all(abs(iodds1_basic_r$odds - my_odds[idx,]) <= toll))
+  expect_true(all(abs(iodds1_wpo_r$odds - my_odds[idx,]) <= toll))
+  expect_true(all(abs(iodds1_or_r$odds - my_odds[idx,]) <= toll))
+  expect_true(all(abs(iodds1_power_r$odds - my_odds[idx,]) <= toll))
+  expect_true(all(abs(iodds1_additive_r$odds - my_odds[idx,]) <= toll))
+
+  # Check that the coefficients are the same.
+  expect_true(all(abs(iodds1_wpo_r$specific_margins - iprobs1_wpo$specific_margins[idx,]) <= toll))
+  expect_true(abs(iodds1_or_r$odds_ratios - iprobs1_or$odds_ratios[idx]) <= toll)
+  expect_true(abs(iodds1_power_r$exponents - iprobs1_power$exponents[idx]) <= toll)
+
+})
 
