@@ -15,9 +15,11 @@ implied_odds(
 \arguments{
 \item{probabilities}{A matrix or numeric of probabilities, where each column is an outcome.}
 
-\item{method}{A string giving the method to use. Valid methods are 'basic', 'wpo', 'or', 'power' or 'additive'.}
+\item{method}{A string giving the method to use. Valid methods are 'basic', 'bb', 'wpo', 'or', 'power' or 'additive'.}
 
 \item{margin}{numeric. How large margin (aka overround) should be added to the probabilities.}
+
+\item{grossmargin}{Numeric. Must be 0 or greater. See the details.}
 
 \item{normalize}{Logical. If TRUE (default), scale the input probabilites to sum to 1.}
 }
