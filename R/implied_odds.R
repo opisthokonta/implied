@@ -15,7 +15,6 @@ or_o_solvefor <- function(cc, probs, margin){
 }
 
 
-
 # Transform the probabilities using the power method.
 pwr_func_o <- function(nn, probs){
   probs^(nn)
@@ -36,19 +35,22 @@ pwr_o_solvefor <- function(nn, probs, margin){
 #' The function does the inverse of what the function \code{\link{implied_probabilities}} does.
 #'
 #' @param probabilities A matrix or numeric of probabilities, where each column is an outcome.
-#' @param method A string giving the method to use. Valid methods are 'basic', 'wpo', 'or', 'power' or 'additive'.
+#' @param method A string giving the method to use. Valid methods are 'basic', 'bb', 'wpo', 'or', 'power' or 'additive'.
 #' @param margin numeric. How large margin (aka overround) should be added to the probabilities.
+#' @param grossmargin Numeric. Must be 0 or greater. See the details.
 #' @param normalize Logical. If TRUE (default), scale the input probabilites to sum to 1.
 #'
 #' @return A named list. The first component is named 'odds' and contain a matrix of
 #' implied odds. The second depends on the method used to compute the probabilities.
 #'
 #' @export
-implied_odds <- function(probabilities, method = 'basic', margin = 0, normalize=TRUE){
+implied_odds <- function(probabilities, method = 'basic', margin = 0,
+                         grossmargin = 0, normalize=TRUE){
 
   stopifnot(length(method) == 1,
             length(margin) == 1,
-            tolower(method) %in% c('basic', 'wpo', 'or', 'power', 'additive'),
+            grossmargin >= 0,
+            tolower(method) %in% c('basic', 'bb', 'wpo', 'or', 'power', 'additive'),
             all(probabilities >= 0, na.rm=TRUE))
 
 
@@ -85,6 +87,13 @@ implied_odds <- function(probabilities, method = 'basic', margin = 0, normalize=
   if (method == 'basic'){
 
     out$odds <- 1 / (probabilities * (1 + margin))
+
+  } else if (method == 'bb'){
+
+    zz <- (((1-grossmargin)*(1 + margin)) - 1) / (n_outcomes-1)
+    out$odds <- 1 / ((1+margin) * (((probabilities*(1-zz)) + zz) / ((n_outcomes-1)*zz + 1)))
+
+    out$zvalues <- zz
 
   } else if (method == 'wpo'){
     # Margin Weights Proportional to the Odds.

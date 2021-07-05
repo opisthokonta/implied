@@ -4,7 +4,13 @@
 \alias{implied_odds}
 \title{Implied odds with added margin from probabilities.}
 \usage{
-implied_odds(probabilities, method = "basic", margin = 0, normalize = TRUE)
+implied_odds(
+  probabilities,
+  method = "basic",
+  margin = 0,
+  grossmargin = 0,
+  normalize = TRUE
+)
 }
 \arguments{
 \item{probabilities}{A matrix or numeric of probabilities, where each column is an outcome.}
