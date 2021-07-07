@@ -1,5 +1,36 @@
 
 
+
+# The functions xx_func_o(coef, probs) transforms proper probabilities (that sum to 1)
+# into improper probabilities as a function of the input coeffient.
+# The corresponding functions xx_o_solvefor(coef, probs, margin) are used
+# with uniroot to find the coefficient that makes the transformed probabilities
+# sum to the desired margin.
+
+# Transform the probabilities using the Shin's method,
+# for a given value of the odds ratio cc.
+shin_func_o <- function(zz, probs, grossmargin=NULL){
+
+  # Eq. 5 in Shin 1993.
+  yy <- sqrt((zz*probs) + ((1-zz)*probs^2))
+  res <- yy * sum(yy)
+
+  if (!is.null(grossmargin)){
+    # Eq. 14 in in Fingleton & Waldron 1999
+    res <- res / (1 - grossmargin)
+  }
+
+  return(res)
+}
+
+# the condition that the sum of the probabilites must sum to 1.
+# Used with uniroot.
+shin_o_solvefor <- function(zz, probs, margin, grossmargin=NULL){
+  tmp <- shin_func_o(zz, probs, grossmargin)
+  sum(tmp) - (1 + margin)
+}
+
+
 # Transform the probabilities using the odds ratio method,
 # for a given value of the odds ratio cc.
 or_func_o <- function(cc, probs){
@@ -35,7 +66,7 @@ pwr_o_solvefor <- function(nn, probs, margin){
 #' The function does the inverse of what the function \code{\link{implied_probabilities}} does.
 #'
 #' @param probabilities A matrix or numeric of probabilities, where each column is an outcome.
-#' @param method A string giving the method to use. Valid methods are 'basic', 'bb', 'wpo', 'or', 'power' or 'additive'.
+#' @param method A string giving the method to use. Valid methods are 'basic', 'shin', 'bb', 'wpo', 'or', 'power' or 'additive'.
 #' @param margin numeric. How large margin (aka overround) should be added to the probabilities.
 #' @param grossmargin Numeric. Must be 0 or greater. See the details.
 #' @param normalize Logical. If TRUE (default), scale the input probabilites to sum to 1.
@@ -45,12 +76,11 @@ pwr_o_solvefor <- function(nn, probs, margin){
 #'
 #' @export
 implied_odds <- function(probabilities, method = 'basic', margin = 0,
-                         grossmargin = 0, normalize=TRUE){
+                         grossmargin = NULL, normalize=TRUE){
 
   stopifnot(length(method) == 1,
             length(margin) == 1,
-            grossmargin >= 0,
-            tolower(method) %in% c('basic', 'bb', 'wpo', 'or', 'power', 'additive'),
+            tolower(method) %in% c('basic', 'shin', 'bb', 'wpo', 'or', 'power', 'additive'),
             all(probabilities >= 0, na.rm=TRUE))
 
 
@@ -88,7 +118,41 @@ implied_odds <- function(probabilities, method = 'basic', margin = 0,
 
     out$odds <- 1 / (probabilities * (1 + margin))
 
+  } else if (method == 'shin'){
+
+    odds <- matrix(nrow=n_probs, ncol=n_outcomes)
+    zz <- numeric(n_probs)
+
+    for (ii in 1:n_probs){
+
+      # Skip rows with missing values.
+      if (missing_idx[ii] == TRUE){
+        next
+      }
+
+      if (margin != 0){
+        res <- stats::uniroot(f=shin_o_solvefor, interval =  c(0, 0.4),
+                              probs=probabilities[ii,],
+                              margin = margin, grossmargin = grossmargin)
+        zz[ii] <- res$root
+      } else {
+        zz[ii] <- 0
+      }
+
+      odds[ii,] <- 1 / shin_func_o(zz=zz[ii], probs = probabilities[ii,], grossmargin = grossmargin)
+    }
+
+    out$odds <- odds
+    out$zvalues <- zz
+
   } else if (method == 'bb'){
+
+    if (is.null(grossmargin)){
+      grossmargin <- 0
+    } else {
+      stopifnot(grossmargin >= 0,
+                length(grossmargin) == 1)
+    }
 
     zz <- (((1-grossmargin)*(1 + margin)) - 1) / (n_outcomes-1)
     out$odds <- 1 / ((1+margin) * (((probabilities*(1-zz)) + zz) / ((n_outcomes-1)*zz + 1)))

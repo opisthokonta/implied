@@ -8,14 +8,14 @@ implied_odds(
   probabilities,
   method = "basic",
   margin = 0,
-  grossmargin = 0,
+  grossmargin = NULL,
   normalize = TRUE
 )
 }
 \arguments{
 \item{probabilities}{A matrix or numeric of probabilities, where each column is an outcome.}
 
-\item{method}{A string giving the method to use. Valid methods are 'basic', 'bb', 'wpo', 'or', 'power' or 'additive'.}
+\item{method}{A string giving the method to use. Valid methods are 'basic', 'shin', 'bb', 'wpo', 'or', 'power' or 'additive'.}
 
 \item{margin}{numeric. How large margin (aka overround) should be added to the probabilities.}
 

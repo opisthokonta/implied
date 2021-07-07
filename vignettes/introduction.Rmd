@@ -16,8 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-
-This package contain a single function, implied_probabilities(), that convert bookmaker odds into proper probabiltiies. Several methods are available, with different assumptions regarding the underlying mechanism the bookmakers convert their probabilities into odds.  
+This package contains functions that convert between bookmaker odds and probabilities. The function implied_probabilities() convert bookmaker odds into proper probabiltiies. The function implied_odds() does the inverse conversion, it turns proper probabilities into bookmaker odds. Several methods are available, with different assumptions regarding the underlying mechanism the bookmakers convert their probabilities into odds. The main focus of this introduction is present how the package works and the methods that convert bookmaker odds into probabilities and. Towards the end is a small demostration on how to convert probabiliteis to bookmaker odds. 
 
 A naive conversion of bookmaker odds into probabilities has two main problems. The first is that the probabilities are not proper probabilities, since they sum to more than 1. The excess probability is called the bookmakers margin. The second problem is that the probabilities, even if the margin is removed, will be biased in several ways, usually because of what is called the [favorite-longshot bias](https://en.wikipedia.org/wiki/Favourite-longshot_bias). The methods in this package remove the bookmaker margin and some of them also adjust for favorite-longshot bias.
 
