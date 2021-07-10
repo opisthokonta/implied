@@ -30,7 +30,7 @@ iprobs1_wpo <- implied_probabilities(my_odds, method='wpo')
 iprobs1_or <- implied_probabilities(my_odds, method='or')
 iprobs1_power <- implied_probabilities(my_odds, method='power')
 iprobs1_additive <- implied_probabilities(my_odds, method='additive')
-iprobs1_kl <- implied_probabilities(my_odds, method='kl')
+iprobs1_jsd <- implied_probabilities(my_odds, method='jsd')
 
 # Shin method uniroot, with grossmargin != 0 should switch to shin_method = 'js'
 # Make sure the output is the same.
@@ -90,7 +90,7 @@ test_that("Output", {
   expect_equal(class(iprobs1_wpo), 'list')
   expect_equal(class(iprobs1_or), 'list')
   expect_equal(class(iprobs1_additive), 'list')
-  expect_equal(class(iprobs1_kl), 'list')
+  expect_equal(class(iprobs1_jsd), 'list')
 
   expect_equal(all(abs(rowSums(iprobs1_basic$probabilities) - 1) < toll), TRUE)
   expect_equal(all(abs(rowSums(iprobs1_shin$probabilities) - 1) < toll), TRUE)
@@ -102,7 +102,7 @@ test_that("Output", {
   expect_equal(all(abs(rowSums(iprobs1_or$probabilities) - 1) < toll), TRUE)
   expect_equal(all(abs(rowSums(iprobs1_power$probabilities) - 1) < toll), TRUE)
   expect_equal(all(abs(rowSums(iprobs1_additive$probabilities) - 1) < toll), TRUE)
-  expect_equal(all(abs(rowSums(iprobs1_kl$probabilities) - 1) < toll), TRUE)
+  expect_equal(all(abs(rowSums(iprobs1_jsd$probabilities) - 1) < toll), TRUE)
 
   expect_equal(all(iprobs1_basic$margin > 0), TRUE)
   expect_equal(all(iprobs1_shin$margin > 0), TRUE)
@@ -114,7 +114,7 @@ test_that("Output", {
   expect_equal(all(iprobs1_or$margin > 0), TRUE)
   expect_equal(all(iprobs1_power$margin > 0), TRUE)
   expect_equal(all(iprobs1_additive$margin > 0), TRUE)
-  expect_equal(all(iprobs1_kl$margin > 0), TRUE)
+  expect_equal(all(iprobs1_jsd$margin > 0), TRUE)
 
   expect_equal(is.null(iprobs1_shin$zvalues), FALSE)
   expect_equal(is.null(iprobs1_shin2$zvalues), FALSE)
@@ -124,7 +124,7 @@ test_that("Output", {
   expect_equal(is.null(iprobs1_wpo$specific_margins), FALSE)
   expect_equal(is.null(iprobs1_or$odds_ratios), FALSE)
   expect_equal(is.null(iprobs1_power$exponents), FALSE)
-  expect_equal(is.null(iprobs1_kl$divergence), FALSE)
+  expect_equal(is.null(iprobs1_jsd$distance), FALSE)
 
 
   expect_equal(class(iprobs2_basic), 'list')
@@ -182,7 +182,7 @@ iprobs1_wpo_nn <- implied_probabilities(my_odds, method='wpo', normalize = FALSE
 iprobs1_or_nn <- implied_probabilities(my_odds, method='or', normalize = FALSE)
 iprobs1_power_nn <- implied_probabilities(my_odds, method='power', normalize = FALSE)
 iprobs1_additive_nn <- implied_probabilities(my_odds, method='additive', normalize = FALSE)
-iprobs1_kl_nn <- implied_probabilities(my_odds, method='kl', normalize = FALSE)
+iprobs1_jsd_nn <- implied_probabilities(my_odds, method='jsd', normalize = FALSE)
 
 # They should all be reasonably close to 1.
 test_that("Non-normalized results", {
@@ -196,7 +196,7 @@ test_that("Non-normalized results", {
   expect_true(all(abs((rowSums(iprobs1_or_nn$probabilities) - 1)) < 0.01))
   expect_true(all(abs((rowSums(iprobs1_power_nn$probabilities) - 1)) < 0.01))
   expect_true(all(abs((rowSums(iprobs1_additive_nn$probabilities) - 1)) < 0.01))
-  expect_true(all(abs((rowSums(iprobs1_kl_nn$probabilities) - 1)) < 0.01))
+  expect_true(all(abs((rowSums(iprobs1_jsd_nn$probabilities) - 1)) < 0.01))
 
 })
 
@@ -220,7 +220,7 @@ iprobs1na_wpo <- implied_probabilities(my_odds_na, method='wpo')
 iprobs1na_or <- implied_probabilities(my_odds_na, method='or')
 iprobs1na_power <- implied_probabilities(my_odds_na, method='power')
 iprobs1na_additive <- implied_probabilities(my_odds_na, method='additive')
-iprobs1na_kl <- implied_probabilities(my_odds_na, method='kl')
+iprobs1na_jsd <- implied_probabilities(my_odds_na, method='jsd')
 
 
 test_that("missing values", {
@@ -277,10 +277,10 @@ test_that("missing values", {
   expect_false(is.na(iprobs1na_additive$problematic[1]))
   expect_false(is.na(iprobs1na_additive$margin[1]))
 
-  expect_true(all(is.na(iprobs1na_kl$probabilities[2,])))
-  expect_true(is.na(iprobs1na_kl$problematic[2]))
-  expect_false(is.na(iprobs1na_kl$problematic[1]))
-  expect_false(is.na(iprobs1na_kl$margin[1]))
+  expect_true(all(is.na(iprobs1na_jsd$probabilities[2,])))
+  expect_true(is.na(iprobs1na_jsd$problematic[2]))
+  expect_false(is.na(iprobs1na_jsd$problematic[1]))
+  expect_false(is.na(iprobs1na_jsd$margin[1]))
 
 
 })

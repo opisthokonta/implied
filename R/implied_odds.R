@@ -236,6 +236,11 @@ implied_odds <- function(probabilities, method = 'basic', margin = 0,
 
   }
 
+  # Make sure the matrix of implied probabilities has column names.
+  if (!is.null(colnames(probabilities))){
+    colnames(out$odds) <- colnames(probabilities)
+  }
+
 
   return(out)
 

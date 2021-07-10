@@ -1,10 +1,10 @@
 Package: implied
 Type: Package
-Title: Convert Bookmaker Odds to Probabilities
-Version: 0.3.2
+Title: Convert Between Bookmaker Odds and Probabilities
+Version: 0.4.0
 Author: Jonas Christoffer Lindstrøm
 Maintainer: Jonas Christoffer Lindstrøm <jonaslindstrom88@gmail.com> 
-Description: Convert bookmaker odds into proper probabilities. Seven different
+Description: Convert between bookmaker odds and probabilities. Eight different
     algorithms are available, including basic normalization, Shin's method 
     (Hyun Song Shin, (1992) <doi:10.2307/2234526>), and others.
 License: GPL-3

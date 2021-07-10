@@ -31,13 +31,13 @@
 #' For values other than 0, this might sometimes cause some probabilities to not be identifiable. A warning
 #' will be given if this happens.
 #'
-#' The method 'kl' was developed by Christopher D. Long, and described in a series of Twitter postings
+#' The method 'jsd' was developed by Christopher D. Long, and described in a series of Twitter postings
 #' and a python implementation posted on GitHub.
 #'
 #'
 #' @param odds A matrix or numeric of bookmaker odds. The odds must be in the decimal format.
 #' @param method A string giving the method to use. Valid methods are 'basic', 'shin', 'bb',
-#' 'wpo', 'or', 'power' or 'additive'.
+#' 'wpo', 'or', 'power', 'additive', and 'jsd'.
 #' @param normalize Logical. Some of the methods will give small rounding errors. If TRUE (default)
 #' a final normalization is applied to make absoultely sure the
 #' probabilities sum to 1.
@@ -51,10 +51,12 @@
 #' \itemize{
 #'  \item{ zvalues (method = 'shin' and method='bb'): The estimated amount of insider trade.}
 #'  \item{ specific_margins (method = 'wpo'): Matrix of the margins applied to each outcome.}
-#'  \item{ odds_ratios (method = 'or'): Numeric with the odds ratio that is used to convert true
-#'  probabilities to bookamker probabilties.}
-#'  \item{ exponents (method = 'power'): The (inverse) exponents that is used to convert true
-#'  probabilities to bookamker probabilties.}
+#'  \item{ odds_ratios (method = 'or'): Numeric with the odds ratio that are used to convert true
+#'  probabilities to bookmaker probabilties.}
+#'  \item{ exponents (method = 'power'): The (inverse) exponents that are used to convert true
+#'  probabilities to bookmaker probabilties.}
+#'  \item{ distance (method = 'jsd'): The Jensen-Shannon distances that are used to convert true
+#'  probabilities to bookmaker probabilties.}
 #' }
 #'
 #' The fourth compnent 'problematic' is a logical vector called indicating if any probabilites has fallen
@@ -87,7 +89,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
                                   shin_method = 'js'){
 
   stopifnot(length(method) == 1,
-            tolower(method) %in% c('basic', 'shin', 'bb', 'wpo', 'or', 'power', 'additive', 'kl'),
+            tolower(method) %in% c('basic', 'shin', 'bb', 'wpo', 'or', 'power', 'additive', 'jsd'),
             all(odds >= 1, na.rm=TRUE),
             grossmargin >= 0,
             shin_method %in% c('js', 'uniroot'),
@@ -267,25 +269,25 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
 
     out$probabilities <- probs
 
-  } else if (method == 'kl'){
+  } else if (method == 'jsd'){
 
     probs <- matrix(nrow=n_odds, ncol=n_outcomes)
-    klds <- numeric(n_odds)
+    jsds <- numeric(n_odds)
 
     for (ii in 1:n_odds){
       # Skip rows with missing values.
       if (missing_idx[ii] == TRUE){
         next
       }
-
-      res <- stats::uniroot(f=kl_solvefor, interval = c(0.0000001, 1), io=inverted_odds[ii,],
+      # 0.2 seems to be a reasonable upper bound.
+      res <- stats::uniroot(f=jsd_solvefor, interval = c(0.0000001, 0.2), io=inverted_odds[ii,],
                             tol=0.0000001)
-      klds[ii] <- res$root
-      probs[ii,] <- kl_func(kl=res$root, io = inverted_odds[ii,])
+      jsds[ii] <- res$root
+      probs[ii,] <- jsd_func(jsd=res$root, io = inverted_odds[ii,])
     }
 
     out$probabilities <- probs
-    out$divergence <- klds
+    out$distance <- jsds
 
 
   }
@@ -379,22 +381,29 @@ pwr_solvefor <- function(nn, io){
   sum(tmp) - 1
 }
 
+# Simple discrete KL-divergence.
+kld <- function(x, y){
+  sum(x * log(x/y))
+}
 
-# The binomial symmetric Kullback-Leibler divergence.
-binom_symkld <- function(p, io){
+# The binomial symmetric Jensen–Shannon distance
+# assuming p and io have length 1.
+binom_jsd <- function(p, io){
 
   pvec <- c(p, 1-p)
   iovec <- c(io, 1-io)
 
-  sum(pvec * (log(pvec/iovec))) + sum(iovec * (log(iovec/pvec)))
+  mm <- (pvec + iovec) / 2
+  sqrt((kld(pvec, mm)/2) + (kld(iovec, mm)/2))
+
 }
 
-# Find the probabilties for a given KL-divergence and inverted odds.
-kl_func <- function(kl, io){
+# Find the probabilties for a given JS distance and inverted odds.
+jsd_func <- function(jsd, io){
 
   # The function to be used by uniroot to find p from kl and io.
-  tosolve <- function(p, io, kl){
-    binom_symkld(p=p, io = io) - kl
+  tosolve <- function(p, io, jsd){
+    binom_jsd(p=p, io = io) - jsd
   }
 
   pp <- numeric(length(io))
@@ -404,16 +413,16 @@ kl_func <- function(kl, io){
     # inverse odds.
     pp[ii] <- stats::uniroot(f = tosolve,
                       interval = c(0.00001, io[ii]),
-                      io = io[ii], kl = kl)$root
+                      io = io[ii], jsd = jsd)$root
   }
   return(pp)
 }
 
-# Calculate the probabilities using the symmetric Kullback-Leibler divergence method,
+# Calculate the probabilities using the Jensen-Shannon distance method,
 # for a given value of the odds ratio cc.
 # io = inverted odds.
-kl_solvefor <- function(kl, io){
-  sum(kl_func(kl=kl, io = io)) - 1
+jsd_solvefor <- function(jsd, io){
+  sum(jsd_func(jsd=jsd, io = io)) - 1
 }
 
 
