@@ -241,7 +241,7 @@ Here are some relevant references and links:
 
 * Stephen Clarke, Stephanie Kovalchik & Martin Ingram (2017) Adjusting Bookmaker’s Odds to Allow for Overround [Link](http://www.sciencepublishinggroup.com/journal/paperinfo?journalid=155&doi=10.11648/j.ajss.20170506.12)
 
-* Hyun Song Shin (1992) Prices of State Contingent Claims with Insider Traders, and the Favourite-Longshot Bias [Link](https://www.jstor.org/stable/2234526)
+* Hyun Song Shin (1992) Prices of State Contingent Claims with Insider Traders, and the Favourite-Longshot Bias [Link](https://doi.org/10.2307/2234526)
 
 *  Hyun Song Shin (1993) Measuring the Incidence of Insider Trading in a Market for State-Contingent Claims [Link](https://doi.org/10.2307/2234526)
 
