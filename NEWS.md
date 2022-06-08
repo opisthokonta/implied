@@ -1,7 +1,12 @@
 
+# implied Version 0.4.1
+* Small change to how the 'jsd' method in implied_probabilities() works, so that it works in some cases where it used to fail.
+* Fixed a link in the Introduction vignette.
+
+
 # implied Version 0.4.0
 * New function implied_odds(), that converts probabilities to odds with a given margin.
-* New method = 'jsd' in implied_probabilities(). Chekc the introductory vignette for more information.
+* New method = 'jsd' in implied_probabilities(). Check the introductory vignette for more information.
 
 # implied Version 0.3.2
 * Fixed wrong formula for the WPO method in the introduction vignette.
