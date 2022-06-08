@@ -4,12 +4,12 @@
 my_odds <- rbind(c(4.20, 3.70, 1.95),
                  c(2.45, 3.70, 2.90),
                  c(2.05, 3.20, 3.80),
-                 c(1.595, 3.990, 6.760))
+                 c(1.595, 3.990, 6.760),
+                 c(1.19 ,7.0 , 14.0))
 
 # Some odds desinged to be problematic with the additive method.
 # It is also problematic with the wpo method.
 my_odds2 <- t(matrix(1/c(0.870, 0.2, 0.1, 0.05, 0.02, 0.01)))
-
 
 
 # tolerance for some tests

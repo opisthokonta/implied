@@ -279,9 +279,12 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, grossmar
       if (missing_idx[ii] == TRUE){
         next
       }
-      # 0.2 seems to be a reasonable upper bound.
-      res <- stats::uniroot(f=jsd_solvefor, interval = c(0.0000001, 0.2), io=inverted_odds[ii,],
+
+      # 0.1 seems to be a reasonable upper bound, with possibility of extending.
+      res <- stats::uniroot(f=jsd_solvefor, interval = c(0.0000001, 0.1),
+                            io=inverted_odds[ii,],
                             tol=0.0000001)
+
       jsds[ii] <- res$root
       probs[ii,] <- jsd_func(jsd=res$root, io = inverted_odds[ii,])
     }
