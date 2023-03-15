@@ -1,4 +1,9 @@
 
+
+# implied Version 0.4.2
+* Can now convert odds to probabilities that should sum to other values than 1, using the target_probability argument in implied_probabilities().
+
+
 # implied Version 0.4.1
 * Small change to how the 'jsd' method in implied_probabilities() works, so that it works in some cases where it used to fail.
 * Fixed a link in the Introduction vignette.
