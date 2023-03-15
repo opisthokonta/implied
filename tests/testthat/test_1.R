@@ -286,6 +286,54 @@ test_that("missing values", {
 })
 
 
+context("Target probabilities other than 1")
+
+# Some English Premier League relegation odds. Should sum to 3.
+relegation_odds <- c(1.53, 1.67, 1.25, 2.38, 2.38, 4.5, 5.5, 6.5, 7)
+
+
+iprobs3_basic <- implied_probabilities(relegation_odds, method='basic',
+                                      target_probability = 3,
+                                      normalize = FALSE)
+
+# Shin does not work with the test odds.
+# iprobs3_shin <- implied_probabilities(relegation_odds, method='shin',
+#                                       shin_method = 'uniroot',
+#                                       target_probability = 3, normalize = FALSE)
+
+iprobs3_power <- implied_probabilities(relegation_odds, method='power',
+                                      target_probability = 3, normalize = FALSE)
+
+iprobs3_or <- implied_probabilities(relegation_odds, method='or',
+                                       target_probability = 3, normalize = FALSE)
+
+iprobs3_additive <- implied_probabilities(relegation_odds, method='additive',
+                                    target_probability = 3, normalize = FALSE)
+
+
+test_that("Target probability 3", {
+
+  expect_equal(class(iprobs3_basic), 'list')
+  expect_equal(class(iprobs3_power), 'list')
+  expect_equal(class(iprobs3_or), 'list')
+  expect_equal(class(iprobs3_additive), 'list')
+
+  expect_equal(all(abs(rowSums(iprobs3_basic$probabilities) - 3) < toll), TRUE)
+  expect_equal(all(abs(rowSums(iprobs3_power$probabilities) - 3) < 0.0001), TRUE)
+  expect_equal(all(abs(rowSums(iprobs3_or$probabilities) - 3) < toll), TRUE)
+  expect_equal(all(abs(rowSums(iprobs3_additive$probabilities) - 3) < toll), TRUE)
+
+  expect_equal(all(iprobs3_basic$margin > 0), TRUE)
+  expect_equal(all(iprobs3_power$margin > 0), TRUE)
+  expect_equal(all(iprobs3_or$margin > 0), TRUE)
+  expect_equal(all(iprobs3_additive$margin > 0), TRUE)
+
+
+  expect_equal(is.null(iprobs3_or$odds_ratios), FALSE)
+  expect_equal(is.null(iprobs3_power$exponents), FALSE)
+
+  })
+
 
 context("Implied odds")
 
@@ -391,6 +439,8 @@ test_that("Output", {
   expect_true(all(iodds1_additive0$odds > 1))
 
 })
+
+
 
 
 context("Converting between odds and probabilities")

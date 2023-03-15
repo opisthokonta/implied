@@ -8,6 +8,7 @@ implied_probabilities(
   odds,
   method = "basic",
   normalize = TRUE,
+  target_probability = 1,
   grossmargin = 0,
   shin_method = "js"
 )
@@ -19,12 +20,14 @@ implied_probabilities(
 'wpo', 'or', 'power', 'additive', and 'jsd'.}
 
 \item{normalize}{Logical. Some of the methods will give small rounding errors. If TRUE (default)
-a final normalization is applied to make absoultely sure the
+a final normalization is applied to make absolutely sure the
 probabilities sum to 1.}
+
+\item{target_probability}{Numeric. The value the probabilities should sum to. Default is 1.}
 
 \item{grossmargin}{Numeric. Must be 0 or greater. See the details.}
 
-\item{shin_method}{Character. Either 'js' (defeault) or 'uniroot'. See the details.}
+\item{shin_method}{Character. Either 'js' (default) or 'uniroot'. See the details.}
 }
 \value{
 A named list. The first component is named 'probabilities' and contain a matrix of
@@ -34,18 +37,18 @@ depends on the method used to compute the probabilities:
  \item{ zvalues (method = 'shin' and method='bb'): The estimated amount of insider trade.}
  \item{ specific_margins (method = 'wpo'): Matrix of the margins applied to each outcome.}
  \item{ odds_ratios (method = 'or'): Numeric with the odds ratio that are used to convert true
- probabilities to bookmaker probabilties.}
+ probabilities to bookmaker probabilities.}
  \item{ exponents (method = 'power'): The (inverse) exponents that are used to convert true
- probabilities to bookmaker probabilties.}
+ probabilities to bookmaker probabilities.}
  \item{ distance (method = 'jsd'): The Jensen-Shannon distances that are used to convert true
- probabilities to bookmaker probabilties.}
+ probabilities to bookmaker probabilities.}
 }
 
-The fourth compnent 'problematic' is a logical vector called indicating if any probabilites has fallen
+The fourth component 'problematic' is a logical vector called indicating if any probabilities has fallen
 outside the 0-1 range, or if there were some other problem computing the probabilities.
 }
 \description{
-This function calculate the implied probabilties from bookmaker odds in decimal format, while
+This function calculate the implied probabilities from bookmaker odds in decimal format, while
 accounting for overround in the odds.
 }
 \details{
@@ -59,10 +62,10 @@ to as the logarithmic method.
 The method 'shin' uses the method by Shin (1992, 1993). This model assumes that there is a fraction of
 insider trading, and that the bookmakers tries to maximize their profits. In addition to providing
 implied probabilties, the method also gives an estimate of the proportion if inside trade, denoted z. Two algorithms
-are implemented for finding the probabilities and z. Which algorithm to use is chosen via the shin_mehod argument.
+are implemented for finding the probabilities and z. Which algorithm to use is chosen via the shin_method argument.
 The default method (shin_method = 'js') is based on the algorithm in Jullien & Salanié (1994). The 'uniroot'
 method uses R's built in equation solver to find the probabilities. The uniroot approach is also used for the
-'pwr' and 'or' methods. The two methods might give slightly different answers, especially when the bookamer margin
+'pwr' and 'or' methods. The two methods might give slightly different answers, especially when the bookmaker margin
 (and z) is small.
 
 The 'bb' (short for "balanced books") method is from Fingleton & Waldron (1999), and is a variant of Shin's method. It too assume
@@ -71,7 +74,7 @@ minimize their risk.
 
 Both the 'shin' and 'bb' methods can be used together with the 'grossmargin' argument. This is also
 from the Fingleton & Waldron (1999) paper, and adds some further assumption to the calculations,
-related to opperating costs. grossmargin should be 0 (default) or greater, typical range is 0 to 0.05.
+related to operating costs. grossmargin should be 0 (default) or greater, typical range is 0 to 0.05.
 For values other than 0, this might sometimes cause some probabilities to not be identifiable. A warning
 will be given if this happens.
 
