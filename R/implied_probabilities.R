@@ -98,11 +98,6 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
             shin_method %in% c('js', 'uniroot'),
             length(shin_method) == 1)
 
-  if (target_probability != 1){
-    if (!method %in% c('basic', 'shin', 'or', 'power', 'additive')){
-      stop('taret_probability other than 1 only works with method shin, or, and power')
-    }
-  }
 
   if (method == 'shin' & shin_method == 'uniroot' & grossmargin != 0){
     shin_method <- 'js'
@@ -216,7 +211,8 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
 
   } else if (method == 'bb'){
 
-    zz <- (((1-grossmargin)*inverted_odds_sum) - 1) / (n_outcomes-1)
+    # zz <- (((1-grossmargin) * inverted_odds_sum) - 1) / (n_outcomes-1)
+    zz <- (((1-grossmargin) * inverted_odds_sum) - target_probability) / (n_outcomes-target_probability)
     probs <- (((1-grossmargin) * inverted_odds) - zz) / (1-zz)
 
     out$probabilities <- probs
@@ -296,9 +292,9 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
         next
       }
 
-      # 0.1 seems to be a reasonable upper bound, with possibility of extending.
+      # 0.1 seems to be a reasonable upper bound.
       res <- stats::uniroot(f=jsd_solvefor, interval = c(0.0000001, 0.1),
-                            io=inverted_odds[ii,],
+                            io=inverted_odds[ii,], trgtprob = target_probability,
                             tol=0.0000001)
 
       jsds[ii] <- res$root
@@ -440,8 +436,8 @@ jsd_func <- function(jsd, io){
 # Calculate the probabilities using the Jensen-Shannon distance method,
 # for a given value of the odds ratio cc.
 # io = inverted odds.
-jsd_solvefor <- function(jsd, io){
-  sum(jsd_func(jsd=jsd, io = io)) - 1
+jsd_solvefor <- function(jsd, io, trgtprob){
+  sum(jsd_func(jsd=jsd, io = io)) - trgtprob
 }
 
 

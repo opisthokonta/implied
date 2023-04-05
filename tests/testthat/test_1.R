@@ -43,7 +43,7 @@ iprobs2_or <- implied_probabilities(my_odds2, method='or')
 iprobs2_power <- implied_probabilities(my_odds2, method='power')
 
 # The KL method does not work with my_odds2.
-#iprobs2_kl <- implied_probabilities(my_odds2, method='kl')
+#iprobs2_jsd <- implied_probabilities(my_odds2, method='jsd')
 
 
 
@@ -301,6 +301,13 @@ iprobs3_basic <- implied_probabilities(relegation_odds, method='basic',
 #                                       shin_method = 'uniroot',
 #                                       target_probability = 3, normalize = FALSE)
 
+
+iprobs3_bb <- implied_probabilities(relegation_odds, method='bb',
+                                     target_probability = 3, normalize = FALSE)
+
+iprobs3_wpo <- implied_probabilities(relegation_odds, method='wpo',
+                                       target_probability = 3, normalize = FALSE)
+
 iprobs3_power <- implied_probabilities(relegation_odds, method='power',
                                       target_probability = 3, normalize = FALSE)
 
@@ -311,26 +318,42 @@ iprobs3_additive <- implied_probabilities(relegation_odds, method='additive',
                                     target_probability = 3, normalize = FALSE)
 
 
+iprobs3_jsd <- implied_probabilities(relegation_odds, method='jsd',
+                                          target_probability = 3, normalize = FALSE)
+
+
+
 test_that("Target probability 3", {
 
   expect_equal(class(iprobs3_basic), 'list')
+  expect_equal(class(iprobs3_bb), 'list')
+  expect_equal(class(iprobs3_wpo), 'list')
   expect_equal(class(iprobs3_power), 'list')
   expect_equal(class(iprobs3_or), 'list')
   expect_equal(class(iprobs3_additive), 'list')
+  expect_equal(class(iprobs3_jsd), 'list')
 
   expect_equal(all(abs(rowSums(iprobs3_basic$probabilities) - 3) < toll), TRUE)
+  expect_equal(all(abs(rowSums(iprobs3_bb$probabilities) - 3) < toll), TRUE)
+  expect_equal(all(abs(rowSums(iprobs3_wpo$probabilities) - 3) < toll), TRUE)
   expect_equal(all(abs(rowSums(iprobs3_power$probabilities) - 3) < 0.0001), TRUE)
   expect_equal(all(abs(rowSums(iprobs3_or$probabilities) - 3) < toll), TRUE)
   expect_equal(all(abs(rowSums(iprobs3_additive$probabilities) - 3) < toll), TRUE)
+  expect_equal(all(abs(rowSums(iprobs3_jsd$probabilities) - 3) < toll), TRUE)
+
 
   expect_equal(all(iprobs3_basic$margin > 0), TRUE)
+  expect_equal(all(iprobs3_bb$margin > 0), TRUE)
+  expect_equal(all(iprobs3_wpo$margin > 0), TRUE)
   expect_equal(all(iprobs3_power$margin > 0), TRUE)
   expect_equal(all(iprobs3_or$margin > 0), TRUE)
   expect_equal(all(iprobs3_additive$margin > 0), TRUE)
+  expect_equal(all(iprobs3_additive$jsd > 0), TRUE)
 
-
+  expect_equal(is.null(iprobs3_wpo$specific_margins), FALSE)
   expect_equal(is.null(iprobs3_or$odds_ratios), FALSE)
   expect_equal(is.null(iprobs3_power$exponents), FALSE)
+  expect_equal(is.null(iprobs3_jsd$distance), FALSE)
 
   })
 
