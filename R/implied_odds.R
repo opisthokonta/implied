@@ -2,7 +2,7 @@
 
 
 # The functions xx_func_o(coef, probs) transforms proper probabilities (that sum to 1)
-# into improper probabilities as a function of the input coeffient.
+# into improper probabilities as a function of the input coefficient.
 # The corresponding functions xx_o_solvefor(coef, probs, margin) are used
 # with uniroot to find the coefficient that makes the transformed probabilities
 # sum to the desired margin.
