@@ -1,0 +1,55 @@
+---
+title: "Troubleshooting"
+author: "Jonas C. Lindstrøm"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Troubleshooting}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+In this document you can find some guidance on what to do if you get errors or weird results.
+
+## Error in stats::uniroot: f() values at end points not of opposite sign
+
+This error can happen when using the methods 'or', 'power', or 'jsd'. These methods convert the odds to probabilities
+using an equations solver called uniroot. Uniroot does a search of possible values of the factor used in the methods, and 
+finds the factor that gives correct probabilities (ie they sum to 1). Sometimes the solver cant find the probabilities.
+
+There are two possible reasons for why the solver cant find the correct factor and the correct probabilities. The first reason (and the most likely) is that the method you have chosen simply does not have a valid solution. Unfortunately, there is not really much to do about it, other than using a different method.
+
+The second reason could be that some of the settings used in the solver does not allow the algorithm to 
+find the solution. You can change some of the settings in the uniroot solver via the uniroot_options argument in implied_probabilities(). 
+
+The following uniroot settings can be changed: interval, maxit, tol and extendInt. Take a look at the help page for the uniroot 
+function for more information about the different settings. 
+
+Here is an example:
+
+
+```{r uniroot_opts_example}
+
+```
+
+
+## Negative probabilities and other problems
+
+
+
+## Some methods works, but others give errors for the same set of odds. Why?
+
+
+
+
+
+
+
