@@ -1,7 +1,7 @@
 Package: implied
 Type: Package
 Title: Convert Between Bookmaker Odds and Probabilities
-Version: 0.4.2
+Version: 0.4.99
 Author: Jonas Christoffer Lindstrøm
 Maintainer: Jonas Christoffer Lindstrøm <jonaslindstrom88@gmail.com> 
 Description: Convert between bookmaker odds and probabilities. Eight different
