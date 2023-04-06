@@ -2,7 +2,9 @@
 title: "Introduction to the implied package"
 author: "Jonas C. Lindstrøm"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    toc: true
 vignette: >
   %\VignetteIndexEntry{Introduction to the implied package}
   %\VignetteEngine{knitr::rmarkdown}
@@ -16,14 +18,17 @@ knitr::opts_chunk$set(
 )
 ```
 
-This package contains functions that convert between bookmaker odds and probabilities. The function implied_probabilities() convert bookmaker odds into proper probabiltiies. The function implied_odds() does the inverse conversion, it turns proper probabilities into bookmaker odds. Several methods are available, with different assumptions regarding the underlying mechanism the bookmakers convert their probabilities into odds. The main focus of this introduction is present how the package works and the methods that convert bookmaker odds into probabilities and. Towards the end is a small demostration on how to convert probabiliteis to bookmaker odds. 
+This package contains functions that convert between bookmaker odds and probabilities. The function implied_probabilities() convert bookmaker odds into proper probabilities. The function implied_odds() does the inverse conversion, it turns proper probabilities into bookmaker odds. Several methods are available, with different assumptions regarding the underlying mechanism the bookmakers convert their probabilities into odds. The main focus of this introduction is present how the package works and the methods that convert bookmaker odds into probabilities and. Towards the end is a small demonstration on how to convert probabilities to bookmaker odds. 
 
 A naive conversion of bookmaker odds into probabilities has two main problems. The first is that the probabilities are not proper probabilities, since they sum to more than 1. The excess probability is called the bookmakers margin. The second problem is that the probabilities, even if the margin is removed, will be biased in several ways, usually because of what is called the [favorite-longshot bias](https://en.wikipedia.org/wiki/Favourite-longshot_bias). The methods in this package remove the bookmaker margin and some of them also adjust for favorite-longshot bias.
 
+In version 0.5 a new feature was introduced. It is now possible to convert odds to probabilities with multiple winners, which means that the probabilities should sum to something greater than 1. One example of this is when you have odds for different teams/players to finish top 3 in a league, in which case the probabilities should sum to 3 instead of 1. The details are explained towards the end of this document.
 
+
+# Methods 
 ## The basic method
 
-The default method used by the function implied_probabilities() is called the basic method. This is the simplest and most common method for converting bookmaker odds into probabilties, and is obtained by dividing the naive probabilities (the inverted odds) by the sum of the inverted odds. If <i>p<sub>i</sub></i> is the true underlying probability for outcome <i>i</i>,  and <i>r<sub>i</sub></i> is the cooresponding inverted odds, then the probabilities are computed as 
+The default method used by the function implied_probabilities() is called the basic method. This is the simplest and most common method for converting bookmaker odds into probabilities, and is obtained by dividing the naive probabilities (the inverted odds) by the sum of the inverted odds. If <i>p<sub>i</sub></i> is the true underlying probability for outcome <i>i</i>,  and <i>r<sub>i</sub></i> is the corresponding inverted odds, then the probabilities are computed as 
 
 <i>p<sub>i</sub></i> = <i>r<sub>i</sub></i> / sum(<i>r</i>)
 
@@ -95,7 +100,7 @@ res3$odds_ratios
 
 ## The power method
 
-The power method models the bookmaker probabilties as a power function of the proper probabilties. This method is also described in the Wisdom of the Crowds document, where it is referred to as the logarithmic method.
+The power method models the bookmaker probabilities as a power function of the proper probabilities. This method is also described in the Wisdom of the Crowds document, where it is referred to as the logarithmic method.
 
 <i>p<sub>i</sub></i> = <i>r<sub>i</sub></i><sup>(1/k)</sup>
 
@@ -112,7 +117,7 @@ res4$exponents
 
 ## The additive method
 
-The additive method removes the margin from the naive probabilites by subtracting an equal amount of of the margin from each outcome. The formula used is
+The additive method removes the margin from the naive probabilities by subtracting an equal amount of of the margin from each outcome. The formula used is
 
 <i>p<sub>i</sub></i> = <i>r<sub>i</sub></i> - ((sum(<i>r</i>) - 1) / n)
 
@@ -175,9 +180,9 @@ res8$zvalues
 
 ## The Jensen–Shannon distance method
 
-This method sees the improper bookmaker probabilties as a noisy version of the true underlying probabilities, and uses the [Jensen–Shannon (JS) distance](https://en.wikipedia.org/wiki/Jensen%E2%80%93Shannon_divergence) as a measure of how noisy the bookmaker probabilities are.
+This method sees the improper bookmaker probabilities as a noisy version of the true underlying probabilities, and uses the [Jensen–Shannon (JS) distance](https://en.wikipedia.org/wiki/Jensen%E2%80%93Shannon_divergence) as a measure of how noisy the bookmaker probabilities are.
 
-For the sake of finding the denoised proabilities <i>p<sub>i</sub></i>, each outcome i is modelled as a binomial variable, with outcomes i and NOT i. These have probabilities <i>p<sub>i</sub></i> and 1-<i>p<sub>i</sub></i>, with corresponding improper bookmaker probabilities <i>r<sub>i</sub></i> and 1-<i>r<sub>i</sub></i>. For a given noise-level D, as measued by the symmetric JS distance, the underlying probabilities can be found by solving the JS distance equation for <i>p<sub>i</sub></i>:
+For the sake of finding the denoised probabilities <i>p<sub>i</sub></i>, each outcome i is modeled as a binomial variable, with outcomes i and NOT i. These have probabilities <i>p<sub>i</sub></i> and 1-<i>p<sub>i</sub></i>, with corresponding improper bookmaker probabilities <i>r<sub>i</sub></i> and 1-<i>r<sub>i</sub></i>. For a given noise-level D, as measued by the symmetric JS distance, the underlying probabilities can be found by solving the JS distance equation for <i>p<sub>i</sub></i>:
 
 
 D = 0.5 * BKL(<i>p<sub>i</sub></i>, <i>m<sub>i</sub></i>) + 0.5 * BKL(<i>r<sub>i</sub></i>, <i>m<sub>i</sub></i>) 
@@ -204,7 +209,27 @@ res9$probabilities
 res9$distance
 ```
 
-## Converting probabilities to odds
+
+# Multiple winning outcomes
+
+In the examples above it has been assumed that the probabilities should sum to 1. This is the correct approach when only 1 of the possible outcomes occur, but this is not correct when multiple outcomes occur. One example of this are odds for players/teams to reach the final in a tournament. In this case the probabilities should sum to 2, as two of the outcomes will be considered a win. Another example is placing in the top 5 in a league, in which case the probabilities should sum to 5. 
+
+You can change the </i>target_probability</i> to something other than 1, and this works for most methods. 
+
+```{r target_prob}
+# Example odds.
+odds_reach_final <- c(1.6, 2.63, 3.3, 3.7, 5.6, 7.1, 12.5, 16.5, 25)
+
+res10 <- implied_probabilities(odds_reach_final, method = 'or', target_probability = 2)
+
+res10$probabilities
+
+sum(res10$probabilities)
+
+```
+
+
+# Converting probabilities to odds
 
 There is also a function that can do the opposite what the implied_probabilities() function does, namely the implied_odds() function. This function converts probabilities to odds, for a given margin, the inverse of the methods as described above. Not all methods have been implemented yet. Take a look at the help file for the function for more details.
 
@@ -228,11 +253,11 @@ res4$exponents[1]
 ```
 
 
-## Other packages
+# Other packages
 The [odds.converter](https://cran.r-project.org/package=odds.converter) package can convert between different odds formats, including to decimal odds, that this package requires.
 
 
-## Literature
+# Literature
 Here are some relevant references and links:
 
 * Joseph Buchdahl - USING THE WISDOM OF THE CROWD TO FIND VALUE IN A FOOTBALL MATCH BETTING MARKET [Link](https://www.football-data.co.uk/wisdom_of_crowd_bets)
