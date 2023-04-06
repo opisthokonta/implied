@@ -464,6 +464,20 @@ test_that("Output", {
 })
 
 
+context("uniroot options")
+
+# Example where the interval is too narrow (true or > 1.03), and extendInt is set to 'no.
+
+
+test_that("Uniroot options",
+
+  # Example where the interval is too narrow (true or > 1.03), and extendInt is set to 'no.
+  # Should throw an error, thus demonstrating that the uniroot_options works.
+  expect_error(
+    implied_probabilities(my_odds, method='or', uniroot_options = list(interval = c(1, 1.01), extendInt = 'no'))
+  )
+
+)
 
 
 context("Converting between odds and probabilities")

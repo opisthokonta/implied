@@ -3,18 +3,18 @@
 #' Implied probabilities from bookmaker odds.
 #'
 #' This function calculate the implied probabilities from bookmaker odds in decimal format, while
-#' accounting for overround in the odds.
+#' accounting for over-round in the odds.
 #'
 #' The method 'basic' is the simplest method, and computes the implied probabilities by
 #' dividing the inverted odds by the sum of the inverted odds.
 #'
 #' The methods 'wpo' (Weights Proportional to the Odds), 'or' (Odds Ratio) and 'power' are form the Wisdom of the Crowds document (the updated version) by
-#' Joseph Buchdahl. The method 'or' is origianlly by Cheung (2015), and the method 'power' is there referred
+#' Joseph Buchdahl. The method 'or' is originally by Cheung (2015), and the method 'power' is there referred
 #' to as the logarithmic method.
 #'
 #' The method 'shin' uses the method by Shin (1992, 1993). This model assumes that there is a fraction of
 #' insider trading, and that the bookmakers tries to maximize their profits. In addition to providing
-#' implied probabilties, the method also gives an estimate of the proportion if inside trade, denoted z. Two algorithms
+#' implied probabilities, the method also gives an estimate of the proportion if inside trade, denoted z. Two algorithms
 #' are implemented for finding the probabilities and z. Which algorithm to use is chosen via the shin_method argument.
 #' The default method (shin_method = 'js') is based on the algorithm in Jullien & Salanié (1994). The 'uniroot'
 #' method uses R's built in equation solver to find the probabilities. The uniroot approach is also used for the
@@ -34,6 +34,11 @@
 #' The method 'jsd' was developed by Christopher D. Long, and described in a series of Twitter postings
 #' and a python implementation posted on GitHub.
 #'
+#' Methods 'shin', 'or', 'power', and 'jsd' use the uniroot solver to find the correct probabilities. Sometimes it will fail
+#' to find a solution, but it can be made to work by tuning some setting. The uniroot_options argument accepts a list with
+#' options that are passed on to the uniroot function. Currently the interval, maxit, tol and extendInt argument of
+#' uniroot can be changed. See the Troubleshooting vignette for more details.
+#'
 #'
 #' @param odds A matrix or numeric of bookmaker odds. The odds must be in the decimal format.
 #' @param method A string giving the method to use. Valid methods are 'basic', 'shin', 'bb',
@@ -44,6 +49,7 @@
 #' @param target_probability Numeric. The value the probabilities should sum to. Default is 1.
 #' @param grossmargin Numeric. Must be 0 or greater. See the details.
 #' @param shin_method Character. Either 'js' (default) or 'uniroot'. See the details.
+#' @param uniroot_options list. Option passed on to the uniroot solver, for those methods where it is applicable. See 'details'.
 #'
 #'
 #' @return A named list. The first component is named 'probabilities' and contain a matrix of
@@ -87,7 +93,7 @@
 #'
 #' @export
 implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_probability = 1,
-                                  grossmargin = 0, shin_method = 'js'){
+                                  grossmargin = 0, shin_method = 'js', uniroot_options = NULL){
 
   stopifnot(length(method) == 1,
             tolower(method) %in% c('basic', 'shin', 'bb', 'wpo', 'or', 'power', 'additive', 'jsd'),
@@ -96,7 +102,8 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
             target_probability > 0,
             grossmargin >= 0,
             shin_method %in% c('js', 'uniroot'),
-            length(shin_method) == 1)
+            length(shin_method) == 1,
+            is.null(uniroot_options) | is.list(uniroot_options))
 
 
   if (method == 'shin' & shin_method == 'uniroot' & grossmargin != 0){
@@ -120,6 +127,16 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
                      dimnames = list(NULL, names(odds)))
     }
   }
+
+  if (method %in% c('shin', 'or', 'power', 'jsd')){
+    uniroot_opts <- default_uniroot_opts(method = method)
+
+    if (is.list(uniroot_options)){
+      uniroot_opts <- utils::modifyList(uniroot_opts, uniroot_options)
+    }
+
+  }
+
 
   # Prepare the list that will be returned.
   out <- vector(mode='list', length=2)
@@ -193,7 +210,9 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
         }
 
 
-        res <- stats::uniroot(f=shin_solvefor, interval = c(0, 0.4), io=inverted_odds[ii,], trgtprob = target_probability)
+        res <- stats::uniroot(f=shin_solvefor, io=inverted_odds[ii,], trgtprob = target_probability,
+                              interval = uniroot_opts$interval, extendInt = uniroot_opts$extendInt,
+                              tol = uniroot_opts$tol, maxiter = uniroot_opts$maxiter)
 
         zvalues[ii] <- res$root
         probs[ii,] <- shin_func(zz=res$root, io = inverted_odds[ii,])
@@ -237,7 +256,9 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
         next
       }
 
-      res <- stats::uniroot(f=or_solvefor, interval = c(0.05, 5), io=inverted_odds[ii,], trgtprob = target_probability)
+      res <- stats::uniroot(f=or_solvefor, io=inverted_odds[ii,], trgtprob = target_probability,
+                            interval = uniroot_opts$interval, extendInt = uniroot_opts$extendInt,
+                            tol = uniroot_opts$tol, maxiter = uniroot_opts$maxiter)
       odds_ratios[ii] <- res$root
       probs[ii,] <- or_func(cc=res$root, io = inverted_odds[ii,])
     }
@@ -257,7 +278,9 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
         next
       }
 
-      res <- stats::uniroot(f=pwr_solvefor, interval = c(0.0001, 1), io=inverted_odds[ii,], trgtprob = target_probability)
+      res <- stats::uniroot(f=pwr_solvefor, io=inverted_odds[ii,], trgtprob = target_probability,
+                            interval = uniroot_opts$interval, extendInt = uniroot_opts$extendInt,
+                            tol = uniroot_opts$tol, maxiter = uniroot_opts$maxiter)
       exponents[ii] <- res$root
       probs[ii,] <- pwr_func(nn=res$root, io = inverted_odds[ii,])
     }
@@ -293,9 +316,9 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
       }
 
       # 0.1 seems to be a reasonable upper bound.
-      res <- stats::uniroot(f=jsd_solvefor, interval = c(0.0000001, 0.1),
-                            io=inverted_odds[ii,], trgtprob = target_probability,
-                            tol=0.0000001)
+      res <- stats::uniroot(f=jsd_solvefor, io=inverted_odds[ii,], trgtprob = target_probability,
+                            interval = uniroot_opts$interval, extendInt = uniroot_opts$extendInt,
+                            tol = uniroot_opts$tol, maxiter = uniroot_opts$maxiter)
 
       jsds[ii] <- res$root
       probs[ii,] <- jsd_func(jsd=res$root, io = inverted_odds[ii,])
@@ -351,6 +374,28 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
 # Internal functions used to transform probabilities
 # and be used with uniroot.
 #########################################################
+
+
+default_uniroot_opts <- function(method){
+  opts <- list(extendInt = 'yes',
+               maxiter = 1000,
+               tol = .Machine$double.eps^0.25)
+
+  if (method == 'shin'){
+    opts$interval <- c(0, 0.4)
+  } else if (method == 'or'){
+    opts$interval <- c(0.95, 5)
+  } else if (method == 'power'){
+    opts$interval <- c(0.0001, 1)
+  } else if (method == 'jsd'){
+    opts$interval <- c(0.0000001, 0.1)
+    opts$tol = 0.000001
+  }
+
+  return(opts)
+
+}
+
 
 # Calculate the probabilities using Shin's formula, for a given value of z.
 # io = inverted odds.

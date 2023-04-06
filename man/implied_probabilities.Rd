@@ -10,7 +10,8 @@ implied_probabilities(
   normalize = TRUE,
   target_probability = 1,
   grossmargin = 0,
-  shin_method = "js"
+  shin_method = "js",
+  uniroot_options = NULL
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ probabilities sum to 1.}
 \item{grossmargin}{Numeric. Must be 0 or greater. See the details.}
 
 \item{shin_method}{Character. Either 'js' (default) or 'uniroot'. See the details.}
+
+\item{uniroot_options}{list. Option passed on to the uniroot solver, for those methods where it is applicable. See 'details'.}
 }
 \value{
 A named list. The first component is named 'probabilities' and contain a matrix of
@@ -49,19 +52,19 @@ outside the 0-1 range, or if there were some other problem computing the probabi
 }
 \description{
 This function calculate the implied probabilities from bookmaker odds in decimal format, while
-accounting for overround in the odds.
+accounting for over-round in the odds.
 }
 \details{
 The method 'basic' is the simplest method, and computes the implied probabilities by
 dividing the inverted odds by the sum of the inverted odds.
 
 The methods 'wpo' (Weights Proportional to the Odds), 'or' (Odds Ratio) and 'power' are form the Wisdom of the Crowds document (the updated version) by
-Joseph Buchdahl. The method 'or' is origianlly by Cheung (2015), and the method 'power' is there referred
+Joseph Buchdahl. The method 'or' is originally by Cheung (2015), and the method 'power' is there referred
 to as the logarithmic method.
 
 The method 'shin' uses the method by Shin (1992, 1993). This model assumes that there is a fraction of
 insider trading, and that the bookmakers tries to maximize their profits. In addition to providing
-implied probabilties, the method also gives an estimate of the proportion if inside trade, denoted z. Two algorithms
+implied probabilities, the method also gives an estimate of the proportion if inside trade, denoted z. Two algorithms
 are implemented for finding the probabilities and z. Which algorithm to use is chosen via the shin_method argument.
 The default method (shin_method = 'js') is based on the algorithm in Jullien & Salanié (1994). The 'uniroot'
 method uses R's built in equation solver to find the probabilities. The uniroot approach is also used for the
@@ -80,6 +83,11 @@ will be given if this happens.
 
 The method 'jsd' was developed by Christopher D. Long, and described in a series of Twitter postings
 and a python implementation posted on GitHub.
+
+Methods 'shin', 'or', 'power', and 'jsd' use the uniroot solver to find the correct probabilities. Sometimes it will fail
+to find a solution, but it can be made to work by tuning some setting. The uniroot_options argument accepts a list with
+options that are passed on to the uniroot function. Currently the interval, maxit, tol and extendInt argument of
+uniroot can be changed. See the Troubleshooting vignette for more details.
 }
 \section{References}{
 
