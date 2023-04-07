@@ -160,6 +160,12 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
     stop('Some inverse odds sum to less than 1.')
   }
 
+  # Vector to keep track of uniroot problems.
+  use_uniroot <- method %in% c('or', 'power', 'jsd') | (method %in% 'shin' & shin_method == 'uniroot')
+  if (use_uniroot){
+    problematic_uniroot <- logical(n_odds)
+    problematic_uniroot_messages <- character(n_odds)
+  }
 
   if (method == 'basic'){
     out$probabilities <- (target_probability * inverted_odds) / inverted_odds_sum
@@ -210,12 +216,17 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
         }
 
 
-        res <- stats::uniroot(f=shin_solvefor, io=inverted_odds[ii,], trgtprob = target_probability,
-                              interval = uniroot_opts$interval, extendInt = uniroot_opts$extendInt,
-                              tol = uniroot_opts$tol, maxiter = uniroot_opts$maxiter)
+        res <- uniroot2(f=shin_solvefor, io=inverted_odds[ii,], trgtprob = target_probability,
+                        interval = uniroot_opts$interval, extendInt = uniroot_opts$extendInt,
+                        tol = uniroot_opts$tol, maxiter = uniroot_opts$maxiter)
 
         zvalues[ii] <- res$root
         probs[ii,] <- shin_func(zz=res$root, io = inverted_odds[ii,])
+
+        if (!is.null(res$message)){
+          problematic_uniroot[ii] <- TRUE
+          problematic_uniroot_messages[ii] <- res$message
+        }
 
       }
     }
@@ -256,11 +267,18 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
         next
       }
 
-      res <- stats::uniroot(f=or_solvefor, io=inverted_odds[ii,], trgtprob = target_probability,
-                            interval = uniroot_opts$interval, extendInt = uniroot_opts$extendInt,
-                            tol = uniroot_opts$tol, maxiter = uniroot_opts$maxiter)
+      res <- uniroot2(f=or_solvefor, io=inverted_odds[ii,], trgtprob = target_probability,
+                      interval = uniroot_opts$interval, extendInt = uniroot_opts$extendInt,
+                      tol = uniroot_opts$tol, maxiter = uniroot_opts$maxiter)
+
       odds_ratios[ii] <- res$root
       probs[ii,] <- or_func(cc=res$root, io = inverted_odds[ii,])
+
+      if (!is.null(res$message)){
+        problematic_uniroot[ii] <- TRUE
+        problematic_uniroot_messages[ii] <- res$message
+      }
+
     }
 
     out$probabilities <- probs
@@ -278,11 +296,16 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
         next
       }
 
-      res <- stats::uniroot(f=pwr_solvefor, io=inverted_odds[ii,], trgtprob = target_probability,
-                            interval = uniroot_opts$interval, extendInt = uniroot_opts$extendInt,
-                            tol = uniroot_opts$tol, maxiter = uniroot_opts$maxiter)
+      res <- uniroot2(f=pwr_solvefor, io=inverted_odds[ii,], trgtprob = target_probability,
+                      interval = uniroot_opts$interval, extendInt = uniroot_opts$extendInt,
+                       tol = uniroot_opts$tol, maxiter = uniroot_opts$maxiter)
       exponents[ii] <- res$root
       probs[ii,] <- pwr_func(nn=res$root, io = inverted_odds[ii,])
+
+      if (!is.null(res$message)){
+        problematic_uniroot[ii] <- TRUE
+        problematic_uniroot_messages[ii] <- res$message
+      }
     }
 
     out$probabilities <- probs
@@ -316,17 +339,20 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
       }
 
       # 0.1 seems to be a reasonable upper bound.
-      res <- stats::uniroot(f=jsd_solvefor, io=inverted_odds[ii,], trgtprob = target_probability,
-                            interval = uniroot_opts$interval, extendInt = uniroot_opts$extendInt,
-                            tol = uniroot_opts$tol, maxiter = uniroot_opts$maxiter)
-
+      res <- uniroot2(f=jsd_solvefor, io=inverted_odds[ii,], trgtprob = target_probability,
+                      interval = uniroot_opts$interval, extendInt = uniroot_opts$extendInt,
+                      tol = uniroot_opts$tol, maxiter = uniroot_opts$maxiter)
       jsds[ii] <- res$root
       probs[ii,] <- jsd_func(jsd=res$root, io = inverted_odds[ii,])
+
+      if (!is.null(res$message)){
+        problematic_uniroot[ii] <- TRUE
+        problematic_uniroot_messages[ii] <- res$message
+      }
     }
 
     out$probabilities <- probs
     out$distance <- jsds
-
 
   }
 
@@ -347,9 +373,23 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
   problematic[missing_idx] <- NA
 
   if (any(problematic, na.rm=TRUE)){
-    warning(sprintf('Probabilities outside the 0-1 range produced at %d instances.\n',
+    warning(sprintf('Probabilities outside the 0-1 range produced at %d instances. See the "problematic" vector in the output.\n',
                     sum(problematic)))
   }
+
+  # Give warnings for problems when uniroot was used.
+  if (use_uniroot){
+
+    if (any(problematic_uniroot)){
+      problematic[problematic_uniroot] <- TRUE
+
+      problematic_uniroot_messages <- unique(problematic_uniroot_messages)
+      for (ww in 1:length(problematic_uniroot_messages)){
+        warning(problematic_uniroot_messages[ww])
+      }
+    }
+  }
+
 
   if (method == 'shin'){
     problematic <- problematic | problematic_shin
@@ -395,6 +435,26 @@ default_uniroot_opts <- function(method){
   return(opts)
 
 }
+
+
+
+# Wrapper around uniroot, but returns a list with NA results
+# if the solver fails.
+uniroot2 <- function(f, interval, ...,
+                     extendInt = 'no', tol = .Machine$double.eps^0.25, maxiter = 1000){
+
+
+  res <- tryCatch({
+    stats::uniroot(f = f, ..., interval = interval, extendInt = extendInt, tol = tol, maxiter = maxiter)
+  }, error = function(e){
+    list(root = NA, message = as.character(e))
+  })
+
+  return(res)
+
+}
+
+
 
 
 # Calculate the probabilities using Shin's formula, for a given value of z.
