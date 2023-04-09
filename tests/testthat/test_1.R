@@ -16,8 +16,8 @@ my_odds2 <- t(matrix(1/c(0.870, 0.2, 0.1, 0.05, 0.02, 0.01)))
 toll <- 0.00005
 
 
+# Implied probabilities ----
 context("Implied probabilities")
-
 
 
 iprobs1_basic <- implied_probabilities(my_odds)
@@ -170,6 +170,7 @@ test_that("Output", {
 })
 
 
+# Non-normalized results ----
 context("Non-normalized results")
 
 iprobs1_basic_nn <- implied_probabilities(my_odds, normalize = FALSE)
@@ -201,6 +202,7 @@ test_that("Non-normalized results", {
 })
 
 
+# Missing values ----
 context("Missing values")
 
 # some example odds, with missing value
@@ -286,6 +288,7 @@ test_that("missing values", {
 })
 
 
+# Target probabilities other than 1 ----
 context("Target probabilities other than 1")
 
 # Some English Premier League relegation odds. Should sum to 3.
@@ -358,6 +361,8 @@ test_that("Target probability 3", {
   })
 
 
+
+# Implied odds ----
 context("Implied odds")
 
 
@@ -464,6 +469,8 @@ test_that("Output", {
 })
 
 
+
+# uniroot options ----
 context("uniroot options")
 
 # Example where the interval is too narrow (true or > 1.03), and extendInt is set to 'no.
@@ -479,7 +486,7 @@ test_that("Uniroot options",
 
 )
 
-
+# Converting between odds and probabilities ----
 context("Converting between odds and probabilities")
 
 
