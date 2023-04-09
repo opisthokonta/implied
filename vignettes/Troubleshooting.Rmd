@@ -17,37 +17,144 @@ knitr::opts_chunk$set(
 ```
 
 
-In this document you can find some guidance on what to do if you get errors or weird results.
+In this document you can find some guidance on what to do if you get errors or weird results. 
 
-## Error in stats::uniroot: f() values at end points not of opposite sign
+Errors and warning messages will typically occur when the algorithms that convert 
+odds to probabilities fails to give a proper results. This does not necessarily 
+mean that there is a bug in the algorithms, it is just as likely that the mathematical 
+relationship between the odds and the underlying probabilities does not conform to 
+the assumptions needed for the different methods to work.
 
-This error can happen when using the methods 'or', 'power', or 'jsd'. These methods convert the odds to probabilities
-using an equations solver called uniroot. Uniroot does a search of possible values of the factor used in the methods, and 
-finds the factor that gives correct probabilities (ie they sum to 1). Sometimes the solver cant find the probabilities.
+In my experience, the following scenarios can often cause problems for at least 
+some of the methods:
 
-There are two possible reasons for why the solver cant find the correct factor and the correct probabilities. The first reason (and the most likely) is that the method you have chosen simply does not have a valid solution. Unfortunately, there is not really much to do about it, other than using a different method.
+- Extremely large odds can often create problems.
+- Many outcomes, such win-odds for competitions with many contestants.
+- Very large bookamker margins.
 
-The second reason could be that some of the settings used in the solver does not allow the algorithm to 
-find the solution. You can change some of the settings in the uniroot solver via the uniroot_options argument in implied_probabilities(). 
+When the conversion from odds to probabilities fail, or give inappropriate results, 
+a warning will show that indicates what the problem might be. In addition, the output 
+from the implied_probabilities function will contain a vector that indicates which 
+lines there are problems. 
 
-The following uniroot settings can be changed: interval, maxit, tol and extendInt. Take a look at the help page for the uniroot 
-function for more information about the different settings. 
+## Identifying problematic results
 
-Here is an example:
+Here is an example. In the code below there are 3 lines of 4-way odds that is converted
+to probabilities using the 'additive' method. The first of these odds fails to be
+properly converted and you get a warning saying 'Probabilities outside the 0-1 
+range produced at 1 instances'.
 
+The point of this example is not to 'fix' the results or tweak the algorithm to 
+work. The algorithm works as it should, it is just that the mathematical relationship 
+between the odds and the underlying probabilities does not work well with the additive
+method. The point is just to show how to find the problematic results, if they occur.
 
-```{r uniroot_opts_example}
+The methods 'wpo', and 'bb' doesn't work with this set of odds either, but the 
+rest does. 
+
+```{r example1_1}
+require(implied)
+
+my_odds <- rbind(c(1.15, 5, 10, 25),
+                c(4.1, 4.2, 8.2, 2.1),
+                c(3.8, 4.7, 5.9, 2.3))
+
+my_probs <- implied_probabilities(my_odds, method = 'additive')
 
 ```
 
 
-## Negative probabilities and other problems
+The vector named "problematic" indicates that there is a problem in the first odds-line 
+in the input. 
+
+```{r example1_2}
+my_probs$problematic
+
+# Can also just list the line numbers
+which(my_probs$problematic)
+
+```
+
+And if we look at the probabilities, you will see that the 4th probability 
+in the first line is negative, which isn't a valid probability. 
+
+```{r example1_3}
+my_probs$probabilities
+```
 
 
 
-## Some methods works, but others give errors for the same set of odds. Why?
+
+## Warning: Probabilities outside the 0-1 range
+
+This warning means that some of the converted probabilities are outside the valid
+range of probabilities, which is between 0 and 1. Most likely a negative probability.
+
+Unless there is an accompanying warning about uniroot-problems, there isn't much
+to do about this, and you should conclude that the conversion method you have used
+is incompatible with the odds you have. Try another method. 
 
 
+
+## Warning: Error in stats::uniroot: f() values at end points not of opposite sign
+
+This error can happen when using the methods 'shin', 'or', 'power', or 'jsd'. These
+methods convert the odds to probabilities using an equations solver called uniroot. 
+Uniroot does a search of possible values of the factor used in the methods, and 
+finds the factor that gives correct probabilities (ie they sum to 1). Sometimes 
+the solver cant find the probabilities.
+
+There are two possible reasons for why the solver cant find the correct factor and 
+the correct probabilities. The first reason (and the most likely) is that the method 
+you have chosen simply does not have a valid solution. Unfortunately, there is not 
+really much to do about it, other than using a different method.
+
+The second reason could be that some of the settings used in the solver does not 
+allow the algorithm to find the solution. You can change some of the settings in
+the uniroot solver via the uniroot_options argument in implied_probabilities(). 
+
+The following uniroot settings can be changed: interval, maxit, tol and extendInt. 
+Take a look at the help page for the uniroot function for more information about
+the different settings. 
+
+
+
+## Warning in log(x/y) : NaNs produced
+
+This warning sometimes occur with method 'jsd', when the odds are extreme or otherwise
+difficult to convert. This does not get flagged as problematic, because it might 
+not actually be a problem. But you should check if the probabilities in question 
+seem reasonable. 
+
+
+## Error: Some inverse odds sum to less than 1.
+
+This error occurs when the naive implied probabilities sum to less than 1. The whole 
+point of the conversion methods in this package is to convert odds to proper probabilities
+where the odds imply a total probability greater than 1, which gives the bookmaker's
+an advantage. If they sum to less than one it means that the bookmaker's odds are advantageous
+for the bettor. This is a very unlikely scenario, and it is most likely due to an
+error in your data processing pipeline. 
+
+The conversion methods might be made to work in this case, but I haven't tried or
+tested it. This might cahnge in the future. 
+
+
+## Warning: Could not find z: Did not converge in x instances. Some results may be unreliable.
+
+This warning can happen with method 'shin', and with shin_method = 'js'. There are 
+two possible fixes: 
+
+ - Try to increase shin_maxiter from the default 1000 to something larger, like 2000. 
+ - Change shin_method to 'uniroot'.
+
+
+## Warning: z estimated to be negative: Some results may be unreliable. 
+
+This warning can happen with methods 'shin' and 'bb'. I am actually not sure if
+the results should be considered unreliable, or if they can be useful. These are 
+not flagged as problematic, and you need to look at the 'zvalues' in the output
+to see which ones are negative. 
 
 
 
