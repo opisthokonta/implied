@@ -49,6 +49,7 @@
 #' @param target_probability Numeric. The value the probabilities should sum to. Default is 1.
 #' @param grossmargin Numeric. Must be 0 or greater. See the details.
 #' @param shin_method Character. Either 'js' (default) or 'uniroot'. See the details.
+#' @param shin_maxiter numeric. Max number of iterations for shin method 'js'.
 #' @param uniroot_options list. Option passed on to the uniroot solver, for those methods where it is applicable. See 'details'.
 #'
 #'
@@ -93,7 +94,8 @@
 #'
 #' @export
 implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_probability = 1,
-                                  grossmargin = 0, shin_method = 'js', uniroot_options = NULL){
+                                  grossmargin = 0, shin_method = 'js', shin_maxiter = 1000,
+                                  uniroot_options = NULL){
 
   stopifnot(length(method) == 1,
             tolower(method) %in% c('basic', 'shin', 'bb', 'wpo', 'or', 'power', 'additive', 'jsd'),
@@ -103,6 +105,8 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
             grossmargin >= 0,
             shin_method %in% c('js', 'uniroot'),
             length(shin_method) == 1,
+            length(shin_maxiter) == 1,
+            shin_maxiter > 1,
             is.null(uniroot_options) | is.list(uniroot_options))
 
 
@@ -188,7 +192,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
         # initialize zz at 0
         zz_tmp <- 0
 
-        for (jj in 1:1000){
+        for (jj in 1:shin_maxiter){
           zz_prev <- zz_tmp
 
           if (grossmargin != 0){
@@ -199,7 +203,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
 
           if (abs(zz_tmp - zz_prev)  <= .Machine$double.eps^0.25){
             break
-          } else if (jj >= 1000){
+          } else if (jj >= shin_maxiter){
             problematic_shin[ii] <- TRUE
           }
 
@@ -235,7 +239,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
     out$zvalues <- zvalues
 
     if (any(problematic_shin[!missing_idx])){
-      warning(sprintf('Could not find z: Did not converge in %d instances. Some results may be unreliable. See the "problematic" vector in the output.',
+      warning(sprintf('Could not find z: Did not converge in %d instances. Some results may be unreliable.',
                       sum(problematic_shin)))
     }
 
@@ -338,7 +342,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
         next
       }
 
-      # 0.1 seems to be a reasonable upper bound.
+
       res <- uniroot2(f=jsd_solvefor, io=inverted_odds[ii,], trgtprob = target_probability,
                       interval = uniroot_opts$interval, extendInt = uniroot_opts$extendInt,
                       tol = uniroot_opts$tol, maxiter = uniroot_opts$maxiter)
@@ -373,7 +377,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
   problematic[missing_idx] <- NA
 
   if (any(problematic, na.rm=TRUE)){
-    warning(sprintf('Probabilities outside the 0-1 range produced at %d instances. See the "problematic" vector in the output.\n',
+    warning(sprintf('Probabilities outside the 0-1 range produced at %d instances.\n',
                     sum(problematic)))
   }
 
@@ -398,7 +402,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
   if (method %in% c('shin', 'bb')){
     negative_z <- out$zvalues < 0
     if (any(negative_z[!missing_idx])){
-      warning(sprintf('z estimated to be negative: Some results may be unreliable. See the "problematic" vector in the output.',
+      warning(sprintf('z estimated to be negative: Some results may be unreliable.',
                       negative_z))
     }
   }
@@ -532,8 +536,10 @@ jsd_func <- function(jsd, io){
     # That the underlying probability i less than the
     # inverse odds.
     pp[ii] <- stats::uniroot(f = tosolve,
-                      interval = c(0.00001, io[ii]),
+                      interval = c(0.000001, io[ii]),
+                      extendInt = 'yes',
                       io = io[ii], jsd = jsd)$root
+
   }
   return(pp)
 }

@@ -11,6 +11,7 @@ implied_probabilities(
   target_probability = 1,
   grossmargin = 0,
   shin_method = "js",
+  shin_maxiter = 1000,
   uniroot_options = NULL
 )
 }
@@ -29,6 +30,8 @@ probabilities sum to 1.}
 \item{grossmargin}{Numeric. Must be 0 or greater. See the details.}
 
 \item{shin_method}{Character. Either 'js' (default) or 'uniroot'. See the details.}
+
+\item{shin_maxiter}{numeric. Max number of iterations for shin method 'js'.}
 
 \item{uniroot_options}{list. Option passed on to the uniroot solver, for those methods where it is applicable. See 'details'.}
 }
