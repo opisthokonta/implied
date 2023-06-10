@@ -1,6 +1,6 @@
 
 
-# implied Version 0.4.99
+# implied Version 0.5
 * Can now convert odds to probabilities that should sum to other values than 1, using the target_probability argument in implied_probabilities().
 * New vignette 'Troubleshooting'.
 * Introduction vignette updated with how to use the new target_probability option.
