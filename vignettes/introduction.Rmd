@@ -197,7 +197,7 @@ is the "binomial" Kullback–Leibler divergence.
 
 The solution is found numerically by finding the value of of <i>D</i> so that sum(<i>p<sub>i</sub></i>) = 1.
 
-The method was developed by Christopher D. Long (twitter: [\@octonion](https://twitter.com/octonion)), and described in a series of Twitter postings [[1](https://twitter.com/octonion/status/1412847000068952064)].
+The method was developed by Christopher D. Long (twitter: @octonion), and described in a series of Twitter postings.
 
 ```{r jsd}
 # Balanced books
