@@ -4,3 +4,5 @@
 ^README-.*\.png$
 ^doc$
 ^Meta$
+^README_files$
+^README\.md$
