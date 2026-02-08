@@ -1,5 +1,9 @@
 
 
+# implied Version 0.6
+* New method 'goto' for finding implied probabilities.
+
+
 # implied Version 0.5
 * Can now convert odds to probabilities that should sum to other values than 1, using the target_probability argument in implied_probabilities().
 * New vignette 'Troubleshooting'.
