@@ -87,6 +87,11 @@ will be given if this happens.
 The method 'jsd' was developed by Christopher D. Long, and described in a series of Twitter postings
 and a python implementation posted on GitHub.
 
+The 'goto' method was developed by Kaito Goto and made available in a Python package (https://github.com/gotoConversion/goto_conversion/).
+The method work by assuming that extreme odds (favorites and longshots) are, in a sense,
+less certain than more moderate odds. The inverse odds is scaled in proportion to their implied
+standard errors and then normalized.
+
 Methods 'shin', 'or', 'power', and 'jsd' use the uniroot solver to find the correct probabilities. Sometimes it will fail
 to find a solution, but it can be made to work by tuning some setting. The uniroot_options argument accepts a list with
 options that are passed on to the uniroot function. Currently the interval, maxit, tol and extendInt argument of

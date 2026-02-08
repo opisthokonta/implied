@@ -34,6 +34,11 @@
 #' The method 'jsd' was developed by Christopher D. Long, and described in a series of Twitter postings
 #' and a python implementation posted on GitHub.
 #'
+#' The 'goto' method was developed by Kaito Goto and made available in a Python package (https://github.com/gotoConversion/goto_conversion/).
+#' The method work by assuming that extreme odds (favorites and longshots) are, in a sense,
+#' less certain than more moderate odds. The inverse odds is scaled in proportion to their implied
+#' standard errors and then normalized.
+#'
 #' Methods 'shin', 'or', 'power', and 'jsd' use the uniroot solver to find the correct probabilities. Sometimes it will fail
 #' to find a solution, but it can be made to work by tuning some setting. The uniroot_options argument accepts a list with
 #' options that are passed on to the uniroot function. Currently the interval, maxit, tol and extendInt argument of
@@ -98,7 +103,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
                                   uniroot_options = NULL){
 
   stopifnot(length(method) == 1,
-            tolower(method) %in% c('basic', 'shin', 'bb', 'wpo', 'or', 'power', 'additive', 'jsd'),
+            tolower(method) %in% c('basic', 'shin', 'bb', 'wpo', 'or', 'power', 'additive', 'jsd', 'goto'),
             all(odds >= 1, na.rm=TRUE),
             length(target_probability) == 1,
             target_probability > 0,
@@ -357,6 +362,16 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
 
     out$probabilities <- probs
     out$distance <- jsds
+
+  } else if (method == 'goto'){
+
+    # Get standard error of inverse odds
+    io_stderr <- sqrt((inverted_odds * (1 - inverted_odds)) / inverted_odds)
+
+    zval <- (inverted_odds_sum - target_probability) / rowSums(io_stderr)
+    probs <- inverted_odds - (zval*io_stderr)
+    out$probabilities <- probs
+    out$zvalues <- probs
 
   }
 

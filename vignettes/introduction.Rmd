@@ -210,6 +210,35 @@ res9$distance
 ```
 
 
+## The GOTO Conversion method
+
+The GOTO Conversion method is based on the assumption that extreme odds (i.e. favorites and longshots) should be considered to less certain than more moderate odds. This method scale the inverse odds in proportion to their standard errors (i.e. their precision), where the standard error for extreme odds are greater because fewer bets are placed on them. 
+
+The standard error for the inverse odds <i>r<sub>i</sub></i> on outcome <i>i</i> is
+
+SE(<i>r<sub>i</sub></i>) = sqrt((<i>r<sub>i</sub></i> * (1 - <i>r<sub>i</sub></i>)) / <i>r<sub>i</sub></i>)
+
+The inverted odds are then scaled to get the proper probabilities  
+
+<i>p<sub>i</sub></i> = <i>r<sub>i</sub></i> - (z*SE(<i>r<sub>i</sub></i>))
+
+where 
+
+z = (sum(<i>r<sub>i</sub></i>) - t) / sum(SE(<i>r<sub>i</sub></i>))
+
+where t is the target probability, which is usually 1, but see the section on "Multiple winning outcomes".
+
+The method was developed by Kaito Goto and originally made available in a Python package (https://github.com/gotoConversion/goto_conversion/).
+
+```{r goto}
+# Balanced books
+res10 <- implied_probabilities(my_odds, method = 'goto')
+
+res10$probabilities
+
+```
+
+
 # Multiple winning outcomes
 
 In the examples above it has been assumed that the probabilities should sum to 1. This is the correct approach when only 1 of the possible outcomes occur, but this is not correct when multiple outcomes occur. One example of this are odds for players/teams to reach the final in a tournament. In this case the probabilities should sum to 2, as two of the outcomes will be considered a win. Another example is placing in the top 5 in a league, in which case the probabilities should sum to 5. 
