@@ -2,12 +2,6 @@
 
 This is the repository for the R package implied. 
 
-
-If you find this package useful, please consider supporting the development at https://ko-fi.com/opisthokonta
-
-[![ko-fi banner and link](README_files/SupportMe_red@2x_scaled.png)](https://ko-fi.com/opisthokonta)
-
-
 On this package you will find the repository for the development version of the package. It is recommended that you install and use the version that is available from CRAN. ([link](https://cran.r-project.org/package=implied)). You can install with this command:
 
 ```{r, eval=FALSE}
