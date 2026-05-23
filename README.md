@@ -2,7 +2,7 @@
 
 This is the repository for the R package implied. 
 
-On this package you will find the repository for the development version of the package. It is recommended that you install and use the version that is available from CRAN. ([link](https://cran.r-project.org/package=implied)). You can install with this command:
+On this page you will find the repository for the development version of the package. It is recommended that you install and use the version that is available from CRAN. ([link](https://cran.r-project.org/package=implied)). You can install with this command:
 
 ```{r, eval=FALSE}
 install.packages('implied')

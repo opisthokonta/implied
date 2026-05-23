@@ -22,7 +22,7 @@ This package contains functions that convert between bookmaker odds and probabil
 
 A naive conversion of bookmaker odds into probabilities has two main problems. The first is that the probabilities are not proper probabilities, since they sum to more than 1. The excess probability is called the bookmakers margin. The second problem is that the probabilities, even if the margin is removed, will be biased in several ways, usually because of what is called the [favorite-longshot bias](https://en.wikipedia.org/wiki/Favourite-longshot_bias). The methods in this package remove the bookmaker margin and some of them also adjust for favorite-longshot bias.
 
-In version 0.5 a new feature was introduced. It is now possible to convert odds to probabilities with multiple winners, which means that the probabilities should sum to something greater than 1. One example of this is when you have odds for different teams/players to finish top 3 in a league, in which case the probabilities should sum to 3 instead of 1. The details are explained towards the end of this document.
+It is also possible to convert odds to probabilities in the case of <i>multiple winning outcomes</i>, for example if you have the odds for finishing top 3 in a league. In such case the probabilities should sum to 3 instead of 1. The details are explained towards the end of this document.
 
 
 # Methods 
@@ -210,9 +210,9 @@ res9$distance
 ```
 
 
-## The GOTO Conversion method
+## The OO-EPC method
 
-The GOTO Conversion method is based on the assumption that extreme odds (i.e. favorites and longshots) should be considered to less certain than more moderate odds. This method scale the inverse odds in proportion to their standard errors (i.e. their precision), where the standard error for extreme odds are greater because fewer bets are placed on them. 
+The Odds-Only-Equal-Profitability-Confidence (OO-EPC), method is based on the idea that extreme odds (i.e. favorites and longshots) should be considered less certain than more moderate odds, because fewer bets will be placed on them. This method scale the inverse odds in proportion to their standard errors (i.e. their precision), where the standard error for extreme odds are greater because fewer bets are placed on them. 
 
 The standard error for the inverse odds <i>r<sub>i</sub></i> on outcome <i>i</i> is
 
@@ -228,11 +228,11 @@ z = (sum(<i>r<sub>i</sub></i>) - t) / sum(SE(<i>r<sub>i</sub></i>))
 
 where t is the target probability, which is usually 1, but see the section on "Multiple winning outcomes".
 
-The method was developed by Kaito Goto and originally made available in a Python package (https://github.com/gotoConversion/goto_conversion/).
+The method was developed by Kaito Goto and originally made available in a Python package (https://github.com/gotoConversion/goto_conversion/), and  later presented in an article (Goto <i>et al.</i>, 2026) 
 
 ```{r goto}
 # Balanced books
-res10 <- implied_probabilities(my_odds, method = 'goto')
+res10 <- implied_probabilities(my_odds, method = 'ooepc')
 
 res10$probabilities
 
@@ -302,5 +302,7 @@ Here are some relevant references and links:
 * Bruno Jullien & Bernard Salanié (1994) Measuring the incidence of insider trading: A comment on Shin [Link](https://doi.org/10.2307/2235458)
 
 *  John Fingleton & Patrick Waldron (1999) Optimal Determination of Bookmakers' Betting Odds: Theory and Tests.[Link](https://www.semanticscholar.org/paper/Optimal-Determination-of-Bookmakers'-Betting-Odds%3A-Fingleton-Waldron/e576f3b103e0ba041ae072a9201b948059c7806e)
+
+* Kaito Goto, Naoya Takeishi, Takehisa Yairi (2026) Forecast Sports Outcomes under Efficient Market Hypothesis: Theoretical and Experimental Analysis of Odds-Only and Generalised Linear Models [Link](https://doi.org/10.48550/arXiv.2604.17194)
 
 

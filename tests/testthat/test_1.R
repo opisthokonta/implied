@@ -31,7 +31,7 @@ iprobs1_or <- implied_probabilities(my_odds, method='or')
 iprobs1_power <- implied_probabilities(my_odds, method='power')
 iprobs1_additive <- implied_probabilities(my_odds, method='additive')
 iprobs1_jsd <- implied_probabilities(my_odds, method='jsd')
-iprobs1_goto <- implied_probabilities(my_odds, method='goto')
+iprobs1_ooepc <- implied_probabilities(my_odds, method='ooepc')
 
 
 # Shin method uniroot, with grossmargin != 0 should switch to shin_method = 'js'
@@ -47,7 +47,7 @@ iprobs2_power <- implied_probabilities(my_odds2, method='power')
 
 # The KL method does not work with my_odds2.
 #iprobs2_jsd <- implied_probabilities(my_odds2, method='jsd')
-#iprobs2_goto <- implied_probabilities(my_odds2, method='goto')
+#iprobs2_ooepc <- implied_probabilities(my_odds2, method='ooepc')
 
 
 
@@ -95,7 +95,7 @@ test_that("Output", {
   expect_equal(class(iprobs1_or), 'list')
   expect_equal(class(iprobs1_additive), 'list')
   expect_equal(class(iprobs1_jsd), 'list')
-  expect_equal(class(iprobs1_goto), 'list')
+  expect_equal(class(iprobs1_ooepc), 'list')
 
   expect_equal(all(abs(rowSums(iprobs1_basic$probabilities) - 1) < toll), TRUE)
   expect_equal(all(abs(rowSums(iprobs1_shin$probabilities) - 1) < toll), TRUE)
@@ -108,7 +108,7 @@ test_that("Output", {
   expect_equal(all(abs(rowSums(iprobs1_power$probabilities) - 1) < toll), TRUE)
   expect_equal(all(abs(rowSums(iprobs1_additive$probabilities) - 1) < toll), TRUE)
   expect_equal(all(abs(rowSums(iprobs1_jsd$probabilities) - 1) < toll), TRUE)
-  expect_equal(all(abs(rowSums(iprobs1_goto$probabilities) - 1) < toll), TRUE)
+  expect_equal(all(abs(rowSums(iprobs1_ooepc$probabilities) - 1) < toll), TRUE)
 
   expect_equal(all(iprobs1_basic$margin > 0), TRUE)
   expect_equal(all(iprobs1_shin$margin > 0), TRUE)
@@ -121,7 +121,7 @@ test_that("Output", {
   expect_equal(all(iprobs1_power$margin > 0), TRUE)
   expect_equal(all(iprobs1_additive$margin > 0), TRUE)
   expect_equal(all(iprobs1_jsd$margin > 0), TRUE)
-  expect_equal(all(iprobs1_goto$margin > 0), TRUE)
+  expect_equal(all(iprobs1_ooepc$margin > 0), TRUE)
 
   expect_equal(is.null(iprobs1_shin$zvalues), FALSE)
   expect_equal(is.null(iprobs1_shin2$zvalues), FALSE)
@@ -132,7 +132,7 @@ test_that("Output", {
   expect_equal(is.null(iprobs1_or$odds_ratios), FALSE)
   expect_equal(is.null(iprobs1_power$exponents), FALSE)
   expect_equal(is.null(iprobs1_jsd$distance), FALSE)
-  expect_equal(is.null(iprobs1_goto$zvalues), FALSE)
+  expect_equal(is.null(iprobs1_ooepc$zvalues), FALSE)
 
 
   expect_equal(class(iprobs2_basic), 'list')
@@ -192,7 +192,7 @@ iprobs1_or_nn <- implied_probabilities(my_odds, method='or', normalize = FALSE)
 iprobs1_power_nn <- implied_probabilities(my_odds, method='power', normalize = FALSE)
 iprobs1_additive_nn <- implied_probabilities(my_odds, method='additive', normalize = FALSE)
 iprobs1_jsd_nn <- implied_probabilities(my_odds, method='jsd', normalize = FALSE)
-iprobs1_goto_nn <- implied_probabilities(my_odds, method='goto', normalize = FALSE)
+iprobs1_ooepc_nn <- implied_probabilities(my_odds, method='ooepc', normalize = FALSE)
 
 # They should all be reasonably close to 1.
 test_that("Non-normalized results", {
@@ -207,7 +207,7 @@ test_that("Non-normalized results", {
   expect_true(all(abs((rowSums(iprobs1_power_nn$probabilities) - 1)) < 0.01))
   expect_true(all(abs((rowSums(iprobs1_additive_nn$probabilities) - 1)) < 0.01))
   expect_true(all(abs((rowSums(iprobs1_jsd_nn$probabilities) - 1)) < 0.01))
-  expect_true(all(abs((rowSums(iprobs1_goto_nn$probabilities) - 1)) < 0.01))
+  expect_true(all(abs((rowSums(iprobs1_ooepc_nn$probabilities) - 1)) < 0.01))
 
 
 })
@@ -234,7 +234,7 @@ iprobs1na_or <- implied_probabilities(my_odds_na, method='or')
 iprobs1na_power <- implied_probabilities(my_odds_na, method='power')
 iprobs1na_additive <- implied_probabilities(my_odds_na, method='additive')
 iprobs1na_jsd <- implied_probabilities(my_odds_na, method='jsd')
-iprobs1na_goto <- implied_probabilities(my_odds_na, method='goto')
+iprobs1na_ooepc <- implied_probabilities(my_odds_na, method='ooepc')
 
 
 test_that("missing values", {
@@ -296,10 +296,10 @@ test_that("missing values", {
   expect_false(is.na(iprobs1na_jsd$problematic[1]))
   expect_false(is.na(iprobs1na_jsd$margin[1]))
 
-  expect_true(all(is.na(iprobs1na_goto$probabilities[2,])))
-  expect_true(is.na(iprobs1na_goto$problematic[2]))
-  expect_false(is.na(iprobs1na_goto$problematic[1]))
-  expect_false(is.na(iprobs1na_goto$margin[1]))
+  expect_true(all(is.na(iprobs1na_ooepc$probabilities[2,])))
+  expect_true(is.na(iprobs1na_ooepc$problematic[2]))
+  expect_false(is.na(iprobs1na_ooepc$problematic[1]))
+  expect_false(is.na(iprobs1na_ooepc$margin[1]))
 
 })
 
@@ -341,7 +341,7 @@ iprobs3_jsd <- implied_probabilities(relegation_odds, method='jsd',
                                           target_probability = 3, normalize = FALSE)
 
 
-iprobs3_goto <- implied_probabilities(relegation_odds, method='goto',
+iprobs3_ooepc <- implied_probabilities(relegation_odds, method='ooepc',
                                      target_probability = 3, normalize = FALSE)
 
 
@@ -354,7 +354,7 @@ test_that("Target probability 3", {
   expect_equal(class(iprobs3_or), 'list')
   expect_equal(class(iprobs3_additive), 'list')
   expect_equal(class(iprobs3_jsd), 'list')
-  expect_equal(class(iprobs3_goto), 'list')
+  expect_equal(class(iprobs3_ooepc), 'list')
 
 
   expect_equal(all(abs(rowSums(iprobs3_basic$probabilities) - 3) < toll), TRUE)
@@ -364,7 +364,7 @@ test_that("Target probability 3", {
   expect_equal(all(abs(rowSums(iprobs3_or$probabilities) - 3) < toll), TRUE)
   expect_equal(all(abs(rowSums(iprobs3_additive$probabilities) - 3) < toll), TRUE)
   expect_equal(all(abs(rowSums(iprobs3_jsd$probabilities) - 3) < toll), TRUE)
-  expect_equal(all(abs(rowSums(iprobs3_goto$probabilities) - 3) < toll), TRUE)
+  expect_equal(all(abs(rowSums(iprobs3_ooepc$probabilities) - 3) < toll), TRUE)
 
 
   expect_equal(all(iprobs3_basic$margin > 0), TRUE)

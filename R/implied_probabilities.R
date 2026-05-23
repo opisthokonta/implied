@@ -34,8 +34,8 @@
 #' The method 'jsd' was developed by Christopher D. Long, and described in a series of Twitter postings
 #' and a python implementation posted on GitHub.
 #'
-#' The 'goto' method was developed by Kaito Goto and made available in a Python package (https://github.com/gotoConversion/goto_conversion/).
-#' The method work by assuming that extreme odds (favorites and longshots) are, in a sense,
+#' The 'ooepc' method was developed by Kaito Goto and made available in a Python package (https://github.com/gotoConversion/goto_conversion/).
+#' The method work by assuming that extreme odds (favorites and longshots) are
 #' less certain than more moderate odds. The inverse odds is scaled in proportion to their implied
 #' standard errors and then normalized.
 #'
@@ -84,6 +84,7 @@
 #'  \item{John Fingleton & Patrick Waldron (1999) Optimal Determination of Bookmakers' Betting Odds: Theory and Tests.}
 #'  \item{Joseph Buchdahl - USING THE WISDOM OF THE CROWD TO FIND VALUE IN A FOOTBALL MATCH BETTING MARKET (https://www.football-data.co.uk/wisdom_of_crowd_bets)}
 #'  \item{Keith Cheung (2015) Fixed-odds betting and traditional odds (https://www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/)}
+#'  \item{Kaito Goto, Naoya Takeishi, Takehisa Yairi (2026) Forecast Sports Outcomes under Efficient Market Hypothesis: Theoretical and Experimental Analysis of Odds-Only and Generalised Linear Models}
 #' }
 #'
 #' @examples
@@ -103,7 +104,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
                                   uniroot_options = NULL){
 
   stopifnot(length(method) == 1,
-            tolower(method) %in% c('basic', 'shin', 'bb', 'wpo', 'or', 'power', 'additive', 'jsd', 'goto'),
+            tolower(method) %in% c('basic', 'shin', 'bb', 'wpo', 'or', 'power', 'additive', 'jsd', 'goto', 'ooepc'),
             all(odds >= 1, na.rm=TRUE),
             length(target_probability) == 1,
             target_probability > 0,
@@ -363,7 +364,7 @@ implied_probabilities <- function(odds, method='basic', normalize=TRUE, target_p
     out$probabilities <- probs
     out$distance <- jsds
 
-  } else if (method == 'goto'){
+  } else if (method %in% c('goto', 'ooepc')){
 
     # Get standard error of inverse odds
     io_stderr <- sqrt((inverted_odds * (1 - inverted_odds)) / inverted_odds)

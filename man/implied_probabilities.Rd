@@ -87,8 +87,8 @@ will be given if this happens.
 The method 'jsd' was developed by Christopher D. Long, and described in a series of Twitter postings
 and a python implementation posted on GitHub.
 
-The 'goto' method was developed by Kaito Goto and made available in a Python package (https://github.com/gotoConversion/goto_conversion/).
-The method work by assuming that extreme odds (favorites and longshots) are, in a sense,
+The 'ooepc' method was developed by Kaito Goto and made available in a Python package (https://github.com/gotoConversion/goto_conversion/).
+The method work by assuming that extreme odds (favorites and longshots) are
 less certain than more moderate odds. The inverse odds is scaled in proportion to their implied
 standard errors and then normalized.
 
@@ -106,6 +106,7 @@ uniroot can be changed. See the Troubleshooting vignette for more details.
  \item{John Fingleton & Patrick Waldron (1999) Optimal Determination of Bookmakers' Betting Odds: Theory and Tests.}
  \item{Joseph Buchdahl - USING THE WISDOM OF THE CROWD TO FIND VALUE IN A FOOTBALL MATCH BETTING MARKET (https://www.football-data.co.uk/wisdom_of_crowd_bets)}
  \item{Keith Cheung (2015) Fixed-odds betting and traditional odds (https://www.sportstradingnetwork.com/article/fixed-odds-betting-traditional-odds/)}
+ \item{Kaito Goto, Naoya Takeishi, Takehisa Yairi (2026) Forecast Sports Outcomes under Efficient Market Hypothesis: Theoretical and Experimental Analysis of Odds-Only and Generalised Linear Models}
 }
 }
 
